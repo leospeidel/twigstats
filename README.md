@@ -1,17 +1,21 @@
 # twigstats
+
 Boost f-statitics power using genealogies. Compatible with [admixtools2](https://uqrmaie1.github.io/admixtools/index.html)
 
 ## Installation
+
+You can install this package by running the following command in R:
 ```R
 library(devtools)
 install_github("leospeidel/twigstats")
 ```
 
-Alternatively, clone this directory and then in R type
+Alternatively, clone this directory (https://github.com/leospeidel/twigstats) and then in R type
 ```R
 library(devtools)
 install()
 ```
+
 <br/>
 
 ## Basic Usage
