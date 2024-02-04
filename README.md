@@ -1,6 +1,7 @@
 # twigstats
 
-Boost f-statitics power using genealogies. Compatible with [admixtools2](https://uqrmaie1.github.io/admixtools/index.html)
+Boost f-statitics power using genealogies. Compatible with [admixtools2](https://uqrmaie1.github.io/admixtools/index.html).<br/>
+Full documentation at [leo.speidel.com/twigstats](https://leo.speidel.com/twigstats).
 
 ## Installation
 
@@ -15,12 +16,13 @@ Alternatively, clone this directory (https://github.com/leospeidel/twigstats) an
 library(devtools)
 install()
 ```
-
 <br/>
 
 ## Basic Usage
 
 Twigstats computes f2 statistics for pairs of populations. The output can be directly fed into functions of the admixtools2 R package (https://uqrmaie1.github.io/admixtools/index.html) to compute any other f-statistic.<br>
+
+Each function is described on this page: [leospeidel.com/twigstats/reference](https://leospeidel.com/twigstats_old/reference).
 
 We will use an example stored under ```inst/sim/```, which contains simulated data for five populations as described in our paper (Figure 1).
 
