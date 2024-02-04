@@ -1,0 +1,26 @@
+Package: twigstats
+Type: Package
+Title: Calculate f2 statistics from Relate trees for input to admixtools2
+Version: 1.0.0
+Encoding: UTF-8
+Date: 2022-02-02
+Author: Leo Speidel
+Maintainer: Leo Speidel <leo.speidel@outlook.com>
+Description: This package takes Relate genealogies as input to produce f2 statistics in a format accepted by admixtools2.
+License: MIT
+Imports: 
+    Rcpp (>= 1.0.7),
+    RcppArmadillo
+LinkingTo: 
+    testthat,
+    Rcpp,
+		RcppArmadillo
+URL: https://github.com/leospeidel/twigstats
+BugReports: https://github.com/leospeidel/twigstats/issues
+Suggests: 
+    xml2,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+RoxygenNote: 7.2.3
+Depends: 
+    dplyr
