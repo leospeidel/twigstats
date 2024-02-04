@@ -1,0 +1,13 @@
+citHeader("To cite twigstats in publications use:")
+
+citEntry(
+  entry    = "Article",
+  title    = "tbd",
+  author   = "Leo Speidel, Pontus Skoglund",
+  journal  = "tbd",
+  year     = "2024",
+  volume   = "",
+  number   = "",
+  pages    = "",
+  url      = "",
+)
