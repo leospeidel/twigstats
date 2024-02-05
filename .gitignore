@@ -3,12 +3,7 @@
 .Rdata
 .httr-oauth
 .DS_Store
-<<<<<<< HEAD
 src/*.so
 src/*.o
 src/*.swp
-=======
-*.so
-*.o
-docs
->>>>>>> a05ebd34404e92c2eec714cb9355a08d04762661
+inst/doc
