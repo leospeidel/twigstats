@@ -13,7 +13,7 @@ theoretical_zscore(t, a, s, alpha)
 
 \item{s}{Source split time in units of 2Ne generations}
 
-\item{alpha}{Admixture proportions}
+\item{alpha}{Admixture proportions. Proportion of P2 in PX.}
 }
 \value{
 Returns the theoretical z-score value.
