@@ -1,8 +1,8 @@
 # twigstats
 
 Boost f-statitics power using genealogies. Compatible with [admixtools2](https://uqrmaie1.github.io/admixtools/index.html).<br/>
-Full documentation at [leo.speidel.com/twigstats](https://leospeidel.com/twigstats).<br/>
-Each function is described on this page: [leospeidel.com/twigstats/reference](https://leospeidel.com/twigstats_old/reference).
+Full documentation at [leospeidel.com/twigstats](https://leospeidel.com/twigstats).<br/>
+Each function is described on this page: [leospeidel.com/twigstats/reference](https://leospeidel.com/twigstats/reference).
 
 ## Installation
 
@@ -20,5 +20,5 @@ install()
 
 ## Basic Usage
 
-Please see [leospeidel.com/twigstats/basic-usage.html](https://leospeidel.com/twigstats/basic-usage.html).
+Please see [leospeidel.com/twigstats/articles/basic-usage.html](https://leospeidel.com/twigstats/articles/basic-usage.html).
 
