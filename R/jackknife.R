@@ -30,19 +30,33 @@ library(dplyr)
 #' f2_blocks2 <- f2_blocks_from_Relate(file_anc, file_mut, poplabels, file_map, t = 500)
 #' f4_ratio(f2_blocks2, popX="PX", popI="P1", pop1="P2", pop2="P3", popO="P4") 
 #' @export 
-f4_ratio <- function(f2_blocks, popO,popI,pop1,pop2,popX){
+f4_ratio <- function(f2_blocks, popO,popI,pop1,pop2,popX, mode = 1){
 
-	#f4(popO,popI,popX,pop1)/f4(popO,popI,pop2,pop1)
-	df_jack <- data.frame(blockID = 1:dim(f2_blocks)[3],
-												hj      = as.numeric(gsub(dimnames(f2_blocks)[3][[1]], pattern = "l", replace = "")),
-												numj    = f2_blocks[popO,pop1,] + f2_blocks[popI,popX,] - f2_blocks[popO,popX,] - f2_blocks[popI,pop1,],
-												denomj  = f2_blocks[popO,pop1,] + f2_blocks[popI,pop2,] - f2_blocks[popO,pop2,] - f2_blocks[popI,pop1,]
-	)
+  if(mode == 1){
+    #f4(popO,popI,popX,pop1)/f4(popO,popI,pop2,pop1)
+    df_jack <- data.frame(blockID = 1:dim(f2_blocks)[3],
+                          hj      = as.numeric(gsub(dimnames(f2_blocks)[3][[1]], pattern = "l", replace = "")),
+                          numj    = f2_blocks[popO,pop1,] + f2_blocks[popI,popX,] - f2_blocks[popO,popX,] - f2_blocks[popI,pop1,],
+                          denomj  = f2_blocks[popO,pop1,] + f2_blocks[popI,pop2,] - f2_blocks[popO,pop2,] - f2_blocks[popI,pop1,]
+    )
 
-	num        <- sum(df_jack$hj * df_jack$numj)/sum(df_jack$hj)
-	denom      <- sum(df_jack$hj * df_jack$denomj)/sum(df_jack$hj)
-	df_jack$Dj <- (sum(df_jack$hj) * num - df_jack$hj * df_jack$numj)/(sum(df_jack$hj) * denom - df_jack$hj * df_jack$denomj)
-	df_jack$hj <- sum(df_jack$hj)/df_jack$hj
+    num        <- sum(df_jack$hj * df_jack$numj)/sum(df_jack$hj)
+    denom      <- sum(df_jack$hj * df_jack$denomj)/sum(df_jack$hj)
+    df_jack$Dj <- (sum(df_jack$hj) * num - df_jack$hj * df_jack$numj)/(sum(df_jack$hj) * denom - df_jack$hj * df_jack$denomj)
+    df_jack$hj <- sum(df_jack$hj)/df_jack$hj
+  }else{
+    #f4(popO,popI,popX,pop2)/f4(popO,popI,pop1,pop2)
+    df_jack <- data.frame(blockID = 1:dim(f2_blocks)[3],
+                          hj      = as.numeric(gsub(dimnames(f2_blocks)[3][[1]], pattern = "l", replace = "")),
+                          numj    = f2_blocks[popO,pop2,] + f2_blocks[popI,popX,] - f2_blocks[popO,popX,] - f2_blocks[popI,pop2,],
+                          denomj  = f2_blocks[popO,pop2,] + f2_blocks[popI,pop1,] - f2_blocks[popO,pop1,] - f2_blocks[popI,pop2,]
+                          )
+
+    num        <- sum(df_jack$hj * df_jack$numj)/sum(df_jack$hj)
+    denom      <- sum(df_jack$hj * df_jack$denomj)/sum(df_jack$hj)
+    df_jack$Dj <- (sum(df_jack$hj) * num - df_jack$hj * df_jack$numj)/(sum(df_jack$hj) * denom - df_jack$hj * df_jack$denomj)
+    df_jack$hj <- sum(df_jack$hj)/df_jack$hj
+  }
 
 	return( cbind(popO = popO, popI = popI, pop1 = pop1, pop2 = pop2, popX = popX, jackknife(df_jack)) )
 
