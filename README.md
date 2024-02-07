@@ -20,5 +20,5 @@ install()
 
 ## Basic Usage
 
-Please see [leospeidel.com/twigstats/articles/basic-usage.html](https://leospeidel.com/twigstats/articles/basic-usage.html).
-
+Please see [leospeidel.com/twigstats/articles/basic-usage.html](https://leospeidel.com/twigstats/articles/basic-usage.html).<br/>
+For a small real data example see [leospeidel.com/twigstats/articles/real-data-example.html](https://leospeidel.com/twigstats/articles/real-data-example.html).

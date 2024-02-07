@@ -7,3 +7,5 @@ src/*.so
 src/*.o
 src/*.swp
 inst/doc
+vignettes/1000G_aDNA_mask_transv_chr1.anc.gz
+vignettes/1000G_aDNA_mask_transv_chr1.mut.gz

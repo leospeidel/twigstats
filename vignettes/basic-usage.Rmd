@@ -21,6 +21,10 @@ Each function implemented in the Twigstats package is described on this page: [l
 
 Here, we will demonstrate key features using an example stored under ```inst/sim/```, which contains simulated data for five populations as described in our paper (Figure 1).
 
+<center>
+![](images/f4ratio.png){#id .class width=120px height=120px}
+</center>
+
 ```{r setup}
 library(twigstats)
 ```
@@ -31,8 +35,9 @@ The first use-case is to compute f2-statistics on Relate genealogies (https://my
 The central function is called ```f2_blocks_from_Relate()``` which takes Relate output files as input.<br>
 Please type ```?f2_blocks_from_Relate``` for more details:<br>
 
-We will use example files that come with the Twigstats package.
-In this example, population PX is admixed between populations P2 and P3, with a mixture proportion of 80% and 20%, respectively. 
+We will illustrate a basic Twigstats run using example files that are included in the Twigstats package.
+In this example, population PX is admixed between populations P2 and P3, with a mixture proportion of 80% and 20%, respectively.
+
 ```{r}
 #These lines assign file names to variables file_anc, file_mut, poplabels, file_map.
 #see https://myersgroup.github.io/relate/getting_started.html#Output for file formats
@@ -50,7 +55,7 @@ We will then plug these f2 statistics into an f4-ratio statistic which computes 
 f2_blocks1 <- f2_blocks_from_Relate(file_anc, file_mut, poplabels, file_map)
 f4_ratio(f2_blocks1, popX="PX", popI="P1", pop1="P2", pop2="P3", popO="P4")
 ```
-As we can see, the inferred admixture proportion is not between 0 and 1 and the standard errors are large. This shows that we are underpowered to infer the admixture proportions using this f4-ratio statistic.
+As we can see, the inferred admixture proportion is not close to the true value of 80% and the standard errors are large. This shows that we are underpowered to infer the admixture proportions using this f4-ratio statistic.
 
 Now we will specify a twigstats cutoff of 500 generations and plug these into an f4-ratio statistic:
 ```{r}
@@ -98,7 +103,7 @@ Next, we compute f2-statistics as normal on the plink format and plug these into
 f2_blocks1 <- f2_blocks_from_RelateAges(pref = file_plink, file_mut)
 f4_ratio(f2_blocks1, popX="PX", popI="P1", pop1="P2", pop2="P3", popO="P4")
 ```
-As before, we can see that the admixture proportion is not between 0 and 1 and the standard errors are large. This shows we are lacking power using the standard f-statistics approach.
+As before, we can see that the standard error of the inferred dmixture proportion is very large. This shows we are lacking power using the standard f-statistics approach.
 
 We can now ascertain mutations by age. Here we choose a cutoff of 500 generations:
 ```{r}

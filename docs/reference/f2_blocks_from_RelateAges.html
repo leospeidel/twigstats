@@ -31,6 +31,7 @@ f2, f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtool
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/basic-usage.html">Basic usage</a>
+    <a class="dropdown-item" href="../articles/real-data-example.html">A small real data example</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -156,14 +157,14 @@ f2, f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtool
 <span class="r-in"><span><span class="co">#Compute f2 statistics between all pairs of populations. You can use pops to only calculate f2s between specified populations.</span></span></span>
 <span class="r-in"><span><span class="va">f2_blocks</span> <span class="op">&lt;-</span> <span class="fu">f2_blocks_from_RelateAges</span><span class="op">(</span>pref <span class="op">=</span> <span class="va">file_plink</span>, <span class="va">file_mut</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="f-statistics.html">f4_ratio</a></span><span class="op">(</span><span class="va">f2_blocks</span>, popX<span class="op">=</span><span class="st">"PX"</span>, popI<span class="op">=</span><span class="st">"P1"</span>, pop1<span class="op">=</span><span class="st">"P2"</span>, pop2<span class="op">=</span><span class="st">"P3"</span>, popO<span class="op">=</span><span class="st">"P4"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   popO popI pop1 pop2 popX     val        se</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   P4   P1   P2   P3   PX 1.56105 0.3807564</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   popO popI pop1 pop2 popX      val        se</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   P4   P1   P2   P3   PX 1.082681 0.2931867</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#Use a cutoff of 500 generations</span></span></span>
 <span class="r-in"><span><span class="va">f2_blocks</span> <span class="op">&lt;-</span> <span class="fu">f2_blocks_from_RelateAges</span><span class="op">(</span>pref <span class="op">=</span> <span class="va">file_plink</span>, <span class="va">file_mut</span>, t <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="f-statistics.html">f4_ratio</a></span><span class="op">(</span><span class="va">f2_blocks</span>, popX<span class="op">=</span><span class="st">"PX"</span>, popI<span class="op">=</span><span class="st">"P1"</span>, pop1<span class="op">=</span><span class="st">"P2"</span>, pop2<span class="op">=</span><span class="st">"P3"</span>, popO<span class="op">=</span><span class="st">"P4"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   popO popI pop1 pop2 popX       val         se</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   P4   P1   P2   P3   PX 0.7817311 0.02798447</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   popO popI pop1 pop2 popX      val         se</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   P4   P1   P2   P3   PX 0.810077 0.03097378</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

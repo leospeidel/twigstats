@@ -1,0 +1,144 @@
+---
+title: "A small real data example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{real-data-example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+```{css, echo=FALSE}
+pre {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+pre[class] {
+  max-height: 300px;
+}
+```
+
+We will illustrate how to run Twigstats on imputed low coverage aDNA using a small example.
+We will use chromosome 1 of 25 publicly available low coverage shotgun genomes from Anglo-Saxon contexts, British Iron/Roman Age, Irish Bronze Age, and the Scandinavian Early Iron Age (Cassidy et al, PNAS 2016; Martiniano et al, Nature Communications 2016; Anastasiadou et al, Communications Biology 2023; Schiffels et al Nature Communications 2016; Gretzinger et al Nature 2022; Rodriguez-Varela et al Cell 2023). 
+
+To look up where preprepared input files are stored on your computer, please execute the following command once Twigstats is installed:
+```
+print(system.file("example/", package = "twigstats"))
+```
+
+## Preparing the data
+
+We imputed the ancient genomes with GLIMPSE (https://odelaneau.github.io/GLIMPSE/) using the 1000 Genomes Project reference panel.
+We then merged these imputed genomes with a subset of the 1000 Genomes Project dataset. The samples we will use here are
+
+```{r, style="max-height: 200px;"}
+popl <- read.table(system.file("example/1000GP_Phase3_sub_aDNA.poplabels", package = "twigstats"), header = T)
+print(popl)
+```
+
+Given this merged VCF, we then remove SNPs with missing data, and filter the data by imputation quality (e.g. requiring a minimum imputation posterior or minimum [INFO score](https://static-content.springer.com/esm/art%3A10.1038%2Fnrg2796/MediaObjects/41576_2010_BFnrg2796_MOESM3_ESM.pdf)).
+
+Removing all SNPs where any genotype has an imputation posterior <80% is achieved by running something like the following command
+```  
+bcftools view --max-alleles 2 --exclude-types indels 1000G_aDNA_chr1.vcf.gz | 
+bcftools +setGT -- -t q -n . -i'SMPL_MAX(FORMAT/GP)<=0.8' | 
+bcftools view -i 'F_MISSING==0.0' -O z -o 1000G_aDNA_nomiss_chr1.vcf.gz
+```
+This usually works well with a small number of samples. For larger data sets, this is likely too restrictive. Please note that Relate cannot accept missing data as input, so if you would like to e.g. retain only sites where <2% of genotypes have a posterior <80%, then you will need to first generate a list of BP positions of SNPs to keep, and then subset the original imputed vcf using bcftools. Such a list can be generated e.g. by
+```
+bcftools view --max-alleles 2 --exclude-types indels 1000G_aDNA_chr1.vcf.gz | 
+bcftools +setGT -- -t q -n . -i'SMPL_MAX(FORMAT/GP)<=0.8' | 
+bcftools view -i 'F_MISSING<=0.02' | 
+bcftools query -f "%CHROM %BP\n" > BP_chr1.txt
+```
+We could alternatively use bcftools to annotate each SNP with an INFO score (see [impute-info](https://samtools.github.io/bcftools/howtos/plugins.html) plugin of bcftools) and require a minimum INFO score for each SNP. This score measures how well a SNP is imputed using surrounding haplotype information. 
+
+We may also opt to only analyse transversions, which we can extract using the following command
+```
+bcftools view -i 'TYPE="snp" && ( (REF!="A" || ALT!="G") && (REF!="G" || ALT!="A") && (REF!="C" || ALT!="T") && (REF!="T" || ALT!="C"))' 1000G_aDNA_nomiss_chr1.vcf.gz -O z -o 1000G_aDNA_transv_chr1.vcf.gz
+```
+
+Once we have a VCF containing SNPs that we are happy with, we can now use a script provided by the Relate package to convert this into the Relate input format. For details please consult the [Relate documentation](https://myersgroup.github.io/relate/):
+```
+~/Documents/genomics/software/relate/bin/RelateFileFormats \
+    --mode ConvertFromVcf \
+  -i 1000G_aDNA_transv_chr1 \
+	--haps 1000G_aDNA_transv_chr1.haps \
+	--sample 1000G_aDNA_transv_chr1.sample
+
+gzip -f 1000G_aDNA_transv_chr1.haps
+gzip -f 1000G_aDNA_transv_chr1.sample
+
+~/Documents/genomics/software/relate/scripts/PrepareInputFiles/PrepareInputFiles.sh \
+    --haps 1000G_aDNA_transv_chr1.haps.gz \
+	--sample 1000G_aDNA_transv_chr1.sample.gz \
+	--ancestor human_ancestor_chr1.fa.gz \
+	-o 1000G_aDNA_mask_transv_chr1 \
+	--remove_ids remove.txt \
+	--mask ./StrictMask_chr1.fa.gz
+```
+Here, we used a [human reference genome](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/supporting/ancestral_alignments/) and [mappability mask](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/supporting/accessible_genome_masks/). These files are avaliable for GRCh38 as well: [human reference genome](https://ftp.ensembl.org/pub/release-86/fasta/ancestral_alleles/) and [mappability mask](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_genomes_project/working/20160622_genome_mask_GRCh38/).
+
+
+## Running Relate
+
+Once we have prepared the data, we can now run Relate. Please consult the [Relate documentation](https://myersgroup.github.io/relate/) for details on how to run Relate. Here, we will run Relate using a mutation rate of 4e-9, corresponding approximately to the average transversion mutation rate in humans, and we will use pre-inferred coalescence rates stored in ```1000G_auto.coal```.
+
+```{bash}
+path="/opt/homebrew/lib/R/4.3/site-library/twigstats/example/"
+
+Relate --mode All \
+    --haps ${path}/1000G_aDNA_mask_transv_chr1.haps.gz \
+	--sample ${path}/1000G_aDNA_mask_transv_chr1.sample.gz \
+	--dist ${path}/1000G_aDNA_mask_transv_chr1.dist.gz \
+	--map ${path}/genetic_map_combined_b37_chr1.txt \
+	-o 1000G_aDNA_mask_transv_chr1 \
+	-m 4e-9 \
+	--coal ${path}/1000G_auto.coal \
+	--sample_ages ${path}/sample_ages.txt \
+	--memory 5 \
+	--seed 1
+
+gzip -f 1000G_aDNA_mask_transv_chr1.anc
+gzip -f 1000G_aDNA_mask_transv_chr1.mut
+```
+
+## Running Twigstats
+
+Finally, once we have inferred Relate trees, we can now run Twigstats. 
+We will aim to infer an admixture in Anglo-Saxon individuals between the preceding British Iron/Roman Age and Early Iron Age Scandinavia.
+
+To illistrate a power gain by using Twigstats, we will run Twigstats in two different ways: First, we will compute regular f2-statistics and second, we will compute f2-statistics on only recent coalescences.
+
+We first assign filenames to variables.
+```{r}
+library(twigstats)
+
+file_anc  <- "1000G_aDNA_mask_transv_chr1.anc.gz"
+file_mut  <- "1000G_aDNA_mask_transv_chr1.mut.gz"
+poplabels <- system.file("example/1000GP_Phase3_sub_aDNA.poplabels", package = "twigstats")
+file_map  <- system.file("example/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+```
+
+Next, we compute regular f2 statistics without a time cutoff:
+```{r}
+#Calculate f2s between all pairs of populations
+f2_blocks <- f2_blocks_from_Relate(file_anc, file_mut, poplabels, file_map, use_muts = T)
+f4_ratio(f2_blocks, popX="England_Saxon.SG", popI="Ireland_BA.SG", pop1="Britain.IronRoman.SG", pop2="Scandinavian_Peninsula_EIA(I).SG", popO="YRI")
+```
+As we can see, the inferred admixture proportion is not between 0 and 1 and the standard errors are extremely large, giving us no meaningful inference.
+
+We now compute f2 statistics on lineages of the past 500 generations using Twigstats:
+```{r}
+#Use a cutoff of 500 generations
+f2_blocks <- f2_blocks_from_Relate(file_anc, file_mut, poplabels, file_map, t = 500)
+f4_ratio(f2_blocks, popX="England_Saxon.SG", popI="Ireland_BA.SG", pop1="Britain.IronRoman.SG", pop2="Scandinavian_Peninsula_EIA(I).SG", popO="YRI")
+```
+The standard errors are much reduced and we get a meaningful admixture proportion! Note that the standard error is still relatively large (though excludes 0 and 1 as feasible proportions). The obvious way to improve power is to use all other chromosomes; here we only used chromosome 1. Additionally, we could build Relate trees with more samples to get more accurate contrains on dates.
+

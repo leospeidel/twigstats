@@ -3,5 +3,6 @@ pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   basic-usage: basic-usage.html
-last_built: 2024-02-05T00:19Z
+  real-data-example: real-data-example.html
+last_built: 2024-02-07T00:04Z
 

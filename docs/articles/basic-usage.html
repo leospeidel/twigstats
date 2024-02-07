@@ -42,6 +42,7 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/basic-usage.html">Basic usage</a>
+    <a class="dropdown-item" href="../articles/real-data-example.html">A small real data example</a>
   </div>
 </li>
       </ul>
@@ -86,6 +87,9 @@ this page: <a href="https://leospeidel.com/twigstats_old/reference" class="exter
 <p>Here, we will demonstrate key features using an example stored under
 <code>inst/sim/</code>, which contains simulated data for five
 populations as described in our paper (Figure 1).</p>
+<center>
+<img src="images/f4ratio.png" id="id" class="class" width="120" height="120">
+</center>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/leospeidel/twigstats" class="external-link">twigstats</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: dplyr</span></span>
@@ -105,9 +109,10 @@ populations as described in our paper (Figure 1).</p>
 <p>The central function is called <code><a href="../reference/f2_blocks_from_Relate.html">f2_blocks_from_Relate()</a></code>
 which takes Relate output files as input.<br> Please type
 <code><a href="../reference/f2_blocks_from_Relate.html">?f2_blocks_from_Relate</a></code> for more details:<br></p>
-<p>We will use example files that come with the Twigstats package. In
-this example, population PX is admixed between populations P2 and P3,
-with a mixture proportion of 80% and 20%, respectively.</p>
+<p>We will illustrate a basic Twigstats run using example files that are
+included in the Twigstats package. In this example, population PX is
+admixed between populations P2 and P3, with a mixture proportion of 80%
+and 20%, respectively.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#These lines assign file names to variables file_anc, file_mut, poplabels, file_map.</span></span>
 <span><span class="co">#see https://myersgroup.github.io/relate/getting_started.html#Output for file formats</span></span>
@@ -123,11 +128,12 @@ statistic which computes an estimate of the admixture proportion.</p>
 <code class="sourceCode R"><span><span class="co">#Calculate regular f2s between all pairs of populations</span></span>
 <span><span class="va">f2_blocks1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/f2_blocks_from_Relate.html">f2_blocks_from_Relate</a></span><span class="op">(</span><span class="va">file_anc</span>, <span class="va">file_mut</span>, <span class="va">poplabels</span>, <span class="va">file_map</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/f-statistics.html">f4_ratio</a></span><span class="op">(</span><span class="va">f2_blocks1</span>, popX<span class="op">=</span><span class="st">"PX"</span>, popI<span class="op">=</span><span class="st">"P1"</span>, pop1<span class="op">=</span><span class="st">"P2"</span>, pop2<span class="op">=</span><span class="st">"P3"</span>, popO<span class="op">=</span><span class="st">"P4"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   popO popI pop1 pop2 popX      val       se</span></span>
-<span><span class="co">#&gt; 1   P4   P1   P2   P3   PX 1.572486 0.389674</span></span></code></pre></div>
-<p>As we can see, the inferred admixture proportion is not between 0 and
-1 and the standard errors are large. This shows that we are underpowered
-to infer the admixture proportions using this f4-ratio statistic.</p>
+<span><span class="co">#&gt;   popO popI pop1 pop2 popX       val        se</span></span>
+<span><span class="co">#&gt; 1   P4   P1   P2   P3   PX 0.9974217 0.3076228</span></span></code></pre></div>
+<p>As we can see, the inferred admixture proportion is not close to the
+true value of 80% and the standard errors are large. This shows that we
+are underpowered to infer the admixture proportions using this f4-ratio
+statistic.</p>
 <p>Now we will specify a twigstats cutoff of 500 generations and plug
 these into an f4-ratio statistic:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -136,7 +142,7 @@ these into an f4-ratio statistic:</p>
 <span><span class="va">f2_blocks2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/f2_blocks_from_Relate.html">f2_blocks_from_Relate</a></span><span class="op">(</span><span class="va">file_anc</span>, <span class="va">file_mut</span>, <span class="va">poplabels</span>, <span class="va">file_map</span>, t <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/f-statistics.html">f4_ratio</a></span><span class="op">(</span><span class="va">f2_blocks2</span>, popX<span class="op">=</span><span class="st">"PX"</span>, popI<span class="op">=</span><span class="st">"P1"</span>, pop1<span class="op">=</span><span class="st">"P2"</span>, pop2<span class="op">=</span><span class="st">"P3"</span>, popO<span class="op">=</span><span class="st">"P4"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   popO popI pop1 pop2 popX       val         se</span></span>
-<span><span class="co">#&gt; 1   P4   P1   P2   P3   PX 0.7602194 0.02394849</span></span></code></pre></div>
+<span><span class="co">#&gt; 1   P4   P1   P2   P3   PX 0.8110266 0.02085804</span></span></code></pre></div>
 <p>The standard errors are much reduced!</p>
 <ul>
 <li>Use argument <b>use_muts</b> to compute f2-statistics on the
@@ -154,15 +160,15 @@ genealogies.</li>
 <span><span class="co">#no twigstats ascertainment</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/admixtools/man/qpdstat.html" class="external-link">f4</a></span><span class="op">(</span><span class="va">f2_blocks1</span>, <span class="st">"P4"</span>, <span class="st">"P3"</span>, <span class="st">"P2"</span>, <span class="st">"PX"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
-<span><span class="co">#&gt;   pop1  pop2  pop3  pop4        est       se      z     p</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P4    P3    P2    PX    -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">670</span> 0.000<span style="text-decoration: underline;">698</span> -<span style="color: #BB0000;">0.960</span> 0.337</span></span>
+<span><span class="co">#&gt;   pop1  pop2  pop3  pop4      est       se     z         p</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P4    P3    P2    PX    0.001<span style="text-decoration: underline;">27</span> 0.000<span style="text-decoration: underline;">314</span>  4.04 0.000<span style="text-decoration: underline;">054</span>3</span></span>
 <span><span class="co">#with twigstats ascertainment</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/admixtools/man/qpdstat.html" class="external-link">f4</a></span><span class="op">(</span><span class="va">f2_blocks2</span>, <span class="st">"P4"</span>, <span class="st">"P3"</span>, <span class="st">"P2"</span>, <span class="st">"PX"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
 <span><span class="co">#&gt;   pop1  pop2  pop3  pop4       est        se     z         p</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P4    P3    P2    PX    0.000<span style="text-decoration: underline;">572</span> 0.000<span style="text-decoration: underline;">023</span>2  24.6 8.74<span style="color: #949494;">e</span><span style="color: #BB0000;">-134</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P4    P3    P2    PX    0.000<span style="text-decoration: underline;">635</span> 0.000<span style="text-decoration: underline;">025</span>3  25.1 1.37<span style="color: #949494;">e</span><span style="color: #BB0000;">-138</span></span></span></code></pre></div>
 <p><br></p>
 </div>
 </div>
@@ -192,19 +198,19 @@ proportion.</p>
 <code class="sourceCode R"><span><span class="co">#Compute regular f2 statistics between all pairs of populations. You can use pops to only calculate f2s between specified populations.</span></span>
 <span><span class="va">f2_blocks1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/f2_blocks_from_RelateAges.html">f2_blocks_from_RelateAges</a></span><span class="op">(</span>pref <span class="op">=</span> <span class="va">file_plink</span>, <span class="va">file_mut</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/f-statistics.html">f4_ratio</a></span><span class="op">(</span><span class="va">f2_blocks1</span>, popX<span class="op">=</span><span class="st">"PX"</span>, popI<span class="op">=</span><span class="st">"P1"</span>, pop1<span class="op">=</span><span class="st">"P2"</span>, pop2<span class="op">=</span><span class="st">"P3"</span>, popO<span class="op">=</span><span class="st">"P4"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   popO popI pop1 pop2 popX     val        se</span></span>
-<span><span class="co">#&gt; 1   P4   P1   P2   P3   PX 1.56105 0.3807564</span></span></code></pre></div>
-<p>As before, we can see that the admixture proportion is not between 0
-and 1 and the standard errors are large. This shows we are lacking power
-using the standard f-statistics approach.</p>
+<span><span class="co">#&gt;   popO popI pop1 pop2 popX      val        se</span></span>
+<span><span class="co">#&gt; 1   P4   P1   P2   P3   PX 1.082681 0.2931867</span></span></code></pre></div>
+<p>As before, we can see that the standard error of the inferred
+dmixture proportion is very large. This shows we are lacking power using
+the standard f-statistics approach.</p>
 <p>We can now ascertain mutations by age. Here we choose a cutoff of 500
 generations:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#Use a cutoff of 500 generations</span></span>
 <span><span class="va">f2_blocks2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/f2_blocks_from_RelateAges.html">f2_blocks_from_RelateAges</a></span><span class="op">(</span>pref <span class="op">=</span> <span class="va">file_plink</span>, <span class="va">file_mut</span>, t <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/f-statistics.html">f4_ratio</a></span><span class="op">(</span><span class="va">f2_blocks2</span>, popX<span class="op">=</span><span class="st">"PX"</span>, popI<span class="op">=</span><span class="st">"P1"</span>, pop1<span class="op">=</span><span class="st">"P2"</span>, pop2<span class="op">=</span><span class="st">"P3"</span>, popO<span class="op">=</span><span class="st">"P4"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   popO popI pop1 pop2 popX       val         se</span></span>
-<span><span class="co">#&gt; 1   P4   P1   P2   P3   PX 0.7817311 0.02798447</span></span></code></pre></div>
+<span><span class="co">#&gt;   popO popI pop1 pop2 popX      val         se</span></span>
+<span><span class="co">#&gt; 1   P4   P1   P2   P3   PX 0.810077 0.03097378</span></span></code></pre></div>
 <p>The standard errors are much reduced! So while we are unable to get a
 reliable estimate without twigstats ascertainment, we estimate PX to
 carry approximately 80% P2 and 20% P3 ancestry with twigstats.</p>
@@ -227,15 +233,15 @@ to calculate f2 statistics at 1240k sites</li>
 <span><span class="co">#no twigstats ascertainment</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/admixtools/man/qpdstat.html" class="external-link">f4</a></span><span class="op">(</span><span class="va">f2_blocks1</span>, <span class="st">"P4"</span>, <span class="st">"P3"</span>, <span class="st">"P2"</span>, <span class="st">"PX"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
-<span><span class="co">#&gt;   pop1  pop2  pop3  pop4        est       se      z     p</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P4    P3    P2    PX    -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">698</span> 0.000<span style="text-decoration: underline;">723</span> -<span style="color: #BB0000;">0.965</span> 0.334</span></span>
+<span><span class="co">#&gt;   pop1  pop2  pop3  pop4      est       se     z        p</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P4    P3    P2    PX    0.001<span style="text-decoration: underline;">16</span> 0.000<span style="text-decoration: underline;">305</span>  3.81 0.000<span style="text-decoration: underline;">139</span></span></span>
 <span><span class="co">#with twigstats ascertainment</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/admixtools/man/qpdstat.html" class="external-link">f4</a></span><span class="op">(</span><span class="va">f2_blocks2</span>, <span class="st">"P4"</span>, <span class="st">"P3"</span>, <span class="st">"P2"</span>, <span class="st">"PX"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
-<span><span class="co">#&gt;   pop1  pop2  pop3  pop4       est        se     z        p</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P4    P3    P2    PX    0.000<span style="text-decoration: underline;">600</span> 0.000<span style="text-decoration: underline;">031</span>8  18.9 2.29<span style="color: #949494;">e</span><span style="color: #BB0000;">-79</span></span></span></code></pre></div>
+<span><span class="co">#&gt;   pop1  pop2  pop3  pop4       est        se     z         p</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P4    P3    P2    PX    0.000<span style="text-decoration: underline;">642</span> 0.000<span style="text-decoration: underline;">028</span>1  22.9 9.35<span style="color: #949494;">e</span><span style="color: #BB0000;">-116</span></span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
