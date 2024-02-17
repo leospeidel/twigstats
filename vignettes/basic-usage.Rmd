@@ -22,14 +22,14 @@ Each function implemented in the Twigstats package is described on this page: [l
 Here, we will demonstrate key features using an example stored under ```inst/sim/```, which contains simulated data for five populations as described in our paper (Figure 1).
 
 <center>
-![](images/f4ratio.png){#id .class width=120px height=120px}
+![](images/f4ratio.png){#id .class width=300px height=300px}
 </center>
 
 ```{r setup}
 library(twigstats)
 ```
 
-### Computing f2-statistics from Relate genealogies
+## Computing f2-statistics from Relate genealogies
 The first use-case is to compute f2-statistics on Relate genealogies (https://myersgroup.github.io/relate/).<br>
 
 The central function is called ```f2_blocks_from_Relate()``` which takes Relate output files as input.<br>
@@ -38,8 +38,8 @@ Please type ```?f2_blocks_from_Relate``` for more details:<br>
 We will illustrate a basic Twigstats run using example files that are included in the Twigstats package.
 In this example, population PX is admixed between populations P2 and P3, with a mixture proportion of 80% and 20%, respectively.
 
+These lines assign filenames to variables ```file_anc```, ```file_mut```, ```poplabels```, and ```file_map```.
 ```{r}
-#These lines assign file names to variables file_anc, file_mut, poplabels, file_map.
 #see https://myersgroup.github.io/relate/getting_started.html#Output for file formats
 file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
@@ -48,7 +48,7 @@ poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "tw
 file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats") #recombination map (three column format)
 ```
 
-We will first calculate f2 statistics as normal on all mutations.<br/>
+We will first calculate f2 statistics as normal without a cutoff.<br/>
 We will then plug these f2 statistics into an f4-ratio statistic which computes an estimate of the admixture proportion.
 ```{r}
 #Calculate regular f2s between all pairs of populations
@@ -70,7 +70,7 @@ The standard errors are much reduced!
 - Use argument <b>blgsize</b> to change jackknife block size
 - Set argument <b>transitions</b> to False to exclude transitions
 
-#### Using admixtools2
+### Using admixtools2
 We can now directly feed this into admixtools2 functions:
 ```{r}
 library(admixtools)
@@ -82,7 +82,7 @@ f4(f2_blocks2, "P4", "P3", "P2", "PX")
 
 <br/>
 
-### Computing f2-statistics on age-ascertained SNPs
+## Computing f2-statistics on age-ascertained SNPs
 Sometimes, we are prefer not to graft samples into genealogies (e.g. due to low sequencing coverage, or if we don't trust the imputation). <br>
 Therefore, the second use-case of Twigstats is to compute f2-statistics on age ascertained mutations.<br>
 
@@ -121,7 +121,7 @@ So while we are unable to get a reliable estimate without twigstats ascertainmen
 - Use file_mut = "./1240k/1240k" to calculate f2 statistics at 1240k sites
 - Use file_mut = "./1000G_ages/1000GP_Phase3_mask_prene_nosingle_chr1" to calculate f2 statistics at 1240k sites
 
-#### Using admixtools2
+### Using admixtools2
 We can now directly feed this into admixtools2 functions:
 ```{r}
 library(admixtools)

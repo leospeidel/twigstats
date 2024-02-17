@@ -1089,6 +1089,13 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 
 	int N = sample.group_of_haplotype.size();
 
+	bool is_haploid = false;
+	if(N == sample.ind.size()){
+		is_haploid = true;
+	}else{
+    assert(sample.ind.size() == 2*N);
+	}
+
 	////////// 1. Read one tree at a time /////////
 
 	double total = 0;
@@ -1347,30 +1354,58 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 		//output to file
 		std::ofstream os(filename_paintout[chr]);
 		os << "EM_iter = 0 (N_e = 0 / copy_prop = 0 / mutation = 0 / mutationGLOBAL = 0), nsamples = 1, N_e_start = 400000.000000 (divided by number of donor haplotypes), region_size = 100.000000\n";
-		for(int i = 0; i < sample.ind.size(); i++){
-			os << "HAP 1 " << sample.ind[i] << "\n";
-			os << "1 ";
-			for(int j = 0; j < painting_profile[2*i].size(); j++){
-				os << painting_profile[2*i][j] << " ";
-			}
-			os << "\n";
+		
+		if(is_haploid){
+			for(int i = 0; i < sample.ind.size(); i++){
+				os << "HAP 1 " << sample.ind[i] << "\n";
+				os << "1 ";
+				for(int j = 0; j < painting_profile[i].size(); j++){
+					os << 2*painting_profile[i][j] << " ";
+				}
+				os << "\n";
 
-			os << "HAP 2 " << sample.ind[i] << "\n";
-			os << "1 ";
-			for(int j = 0; j < painting_profile[2*i+1].size(); j++){
-				os << painting_profile[2*i+1][j] << " ";
+				os << "HAP 2 " << sample.ind[i] << "\n";
+				os << "1 ";
+				for(int j = 0; j < painting_profile[i].size(); j++){
+					os << 2*painting_profile[i][j] << " ";
+				}
+				os << "\n";
 			}
-			os << "\n";
+			os.close();
+		}else{
+			for(int i = 0; i < sample.ind.size(); i++){
+				os << "HAP 1 " << sample.ind[i] << "\n";
+				os << "1 ";
+				for(int j = 0; j < painting_profile[2*i].size(); j++){
+					os << painting_profile[2*i][j] << " ";
+				}
+				os << "\n";
+
+				os << "HAP 2 " << sample.ind[i] << "\n";
+				os << "1 ";
+				for(int j = 0; j < painting_profile[2*i+1].size(); j++){
+					os << painting_profile[2*i+1][j] << " ";
+				}
+				os << "\n";
+			}
+			os.close();
 		}
-		os.close();
 
 	}
 
-	std::ofstream os_id(filename_out + "_idfile.txt");
-	for(int i = 0; i < sample.ind.size(); i++){
-		os_id << sample.ind[i] << " " << sample.groups[sample.group_of_haplotype[2*i]] << " 1\n";
+	if(is_haploid){
+		std::ofstream os_id(filename_out + "_idfile.txt");
+		for(int i = 0; i < sample.ind.size(); i++){
+			os_id << sample.ind[i] << " " << sample.groups[sample.group_of_haplotype[i]] << " 1\n";
+		}
+		os_id.close();
+	}else{
+		std::ofstream os_id(filename_out + "_idfile.txt");
+		for(int i = 0; i < sample.ind.size(); i++){
+			os_id << sample.ind[i] << " " << sample.groups[sample.group_of_haplotype[2*i]] << " 1\n";
+		}
+		os_id.close();
 	}
-	os_id.close();
 
 	std::cerr << std::endl;
 

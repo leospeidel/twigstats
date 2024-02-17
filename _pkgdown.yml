@@ -1,5 +1,35 @@
-url: ~
+url: https://leospeidel.com/twigstats/
+
 template:
-  bootstrap: 5
-  reference: 
-    label: 'All functions'
+  bootswatch: minty
+  ganalytics: 
+  includes:
+    in_header: |
+       <!-- Global site tag (gtag.js) - Google Analytics -->
+       <script async src="https://www.googletagmanager.com/gtag/js?id={G-P8RP1CGQ1W}"#' ></script>
+       <script>
+         window.dataLayer = window.dataLayer || [];
+         function gtag(){dataLayer.push(arguments);}
+         gtag('js', new Date());
+
+         gtag('config', '{G-P8RP1CGQ1W}');
+       </script>
+  bslib:
+    pkgdown-nav-height: 100px
+    bg: "white"
+    fg: "#01161e"
+    primary: "#8d99ae"
+
+reference:
+  - title: "Twigstats functions"
+    contents:
+      - f2_blocks_from_Relate
+      - f2_blocks_from_RelateAges
+      - f4_ratio
+      - jackknife
+      - theoretical_zscore
+  - title: "Chromosome painting functions"
+    contents:
+      - Painting
+      - PaintingProfile
+      - PaintingNNLS

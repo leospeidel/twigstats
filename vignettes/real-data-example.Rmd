@@ -83,7 +83,7 @@ gzip -f 1000G_aDNA_transv_chr1.sample
 	--remove_ids remove.txt \
 	--mask ./StrictMask_chr1.fa.gz
 ```
-Here, we used a [human reference genome](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/supporting/ancestral_alignments/) and [mappability mask](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/supporting/accessible_genome_masks/). These files are avaliable for GRCh38 as well: [human reference genome](https://ftp.ensembl.org/pub/release-86/fasta/ancestral_alleles/) and [mappability mask](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_genomes_project/working/20160622_genome_mask_GRCh38/).
+Here, we used a [human ancestral genome](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/supporting/ancestral_alignments/) and [mappability mask](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/supporting/accessible_genome_masks/). These files are avaliable for GRCh38 as well: [human ancestral genome](https://ftp.ensembl.org/pub/release-86/fasta/ancestral_alleles/) and [mappability mask](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_genomes_project/working/20160622_genome_mask_GRCh38/).
 
 
 ## Running Relate
