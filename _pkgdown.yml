@@ -6,13 +6,13 @@ template:
   includes:
     in_header: |
        <!-- Global site tag (gtag.js) - Google Analytics -->
-       <script async src="https://www.googletagmanager.com/gtag/js?id={G-P8RP1CGQ1W}"#' ></script>
+       <script async src="https://www.googletagmanager.com/gtag/js?id=G-P8RP1CGQ1W"></script>
        <script>
          window.dataLayer = window.dataLayer || [];
          function gtag(){dataLayer.push(arguments);}
          gtag('js', new Date());
 
-         gtag('config', '{G-P8RP1CGQ1W}');
+         gtag('config', 'G-P8RP1CGQ1W');
        </script>
   bslib:
     pkgdown-nav-height: 100px
