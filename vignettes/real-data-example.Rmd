@@ -35,7 +35,7 @@ print(system.file("example/", package = "twigstats"))
 ## Preparing the data
 
 We imputed the ancient genomes with GLIMPSE (https://odelaneau.github.io/GLIMPSE/) using the 1000 Genomes Project reference panel.
-We then merged these imputed genomes with a subset of the 1000 Genomes Project dataset. The samples we will use here are
+We then merged these imputed genomes with a subset of the 1000 Genomes Project dataset. You can see the samples we will use here in the box below:
 
 ```{r, style="max-height: 200px;"}
 popl <- read.table(system.file("example/1000GP_Phase3_sub_aDNA.poplabels", package = "twigstats"), header = T)

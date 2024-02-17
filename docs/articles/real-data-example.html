@@ -127,8 +127,8 @@ please execute the following command once Twigstats is installed:</p>
 </h2>
 <p>We imputed the ancient genomes with GLIMPSE (<a href="https://odelaneau.github.io/GLIMPSE/" class="external-link uri">https://odelaneau.github.io/GLIMPSE/</a>) using the 1000
 Genomes Project reference panel. We then merged these imputed genomes
-with a subset of the 1000 Genomes Project dataset. The samples we will
-use here are</p>
+with a subset of the 1000 Genomes Project dataset. You can see the
+samples we will use here in the box below:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">popl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"example/1000GP_Phase3_sub_aDNA.poplabels"</span>, package <span class="op">=</span> <span class="st">"twigstats"</span><span class="op">)</span>, header <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">popl</span><span class="op">)</span></span>
@@ -277,7 +277,7 @@ pre-inferred coalescence rates stored in
 <span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a><span class="co">#&gt; Parsing data..</span></span>
 <span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a><span class="co">#&gt; Warning: Will use min 0.00019GB of hard disc.</span></span>
-<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 3.641724s; Max Memory usage: 56Mb.</span></span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 3.577806s; Max Memory usage: 56Mb.</span></span>
 <span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb7-39"><a href="#cb7-39" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
@@ -291,36 +291,36 @@ pre-inferred coalescence rates stored in
 <span id="cb7-47"><a href="#cb7-47" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb7-48"><a href="#cb7-48" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb7-49"><a href="#cb7-49" tabindex="-1"></a><span class="co">#&gt; Painting sequences...</span></span>
-<span id="cb7-50"><a href="#cb7-50" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 5.277085s; Max Memory usage: 1.1e+02Mb.</span></span>
+<span id="cb7-50"><a href="#cb7-50" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 5.200930s; Max Memory usage: 99Mb.</span></span>
 <span id="cb7-51"><a href="#cb7-51" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb7-52"><a href="#cb7-52" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb7-53"><a href="#cb7-53" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb7-54"><a href="#cb7-54" tabindex="-1"></a><span class="co">#&gt; Estimating topologies of AncesTrees in sections 0-0...</span></span>
 <span id="cb7-55"><a href="#cb7-55" tabindex="-1"></a><span class="co">#&gt; [0/0]</span></span>
-<span id="cb7-56"><a href="#cb7-56" tabindex="-1"></a><span class="ex">CPU</span> Time spent: 20.171999s<span class="kw">;</span> <span class="ex">Max</span> Memory usage: 1.7e+03Mb.</span>
+<span id="cb7-56"><a href="#cb7-56" tabindex="-1"></a><span class="ex">CPU</span> Time spent: 19.999151s<span class="kw">;</span> <span class="ex">Max</span> Memory usage: 2.2e+03Mb.</span>
 <span id="cb7-57"><a href="#cb7-57" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb7-58"><a href="#cb7-58" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb7-59"><a href="#cb7-59" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb7-60"><a href="#cb7-60" tabindex="-1"></a><span class="co">#&gt; Propagating mutations across AncesTrees...</span></span>
-<span id="cb7-61"><a href="#cb7-61" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 24.434302s; Max Memory usage: 1.7e+03Mb.</span></span>
+<span id="cb7-61"><a href="#cb7-61" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 24.232883s; Max Memory usage: 2.2e+03Mb.</span></span>
 <span id="cb7-62"><a href="#cb7-62" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb7-63"><a href="#cb7-63" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb7-64"><a href="#cb7-64" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb7-65"><a href="#cb7-65" tabindex="-1"></a><span class="co">#&gt; Inferring branch lengths of AncesTrees in sections 0-0...</span></span>
 <span id="cb7-66"><a href="#cb7-66" tabindex="-1"></a><span class="co">#&gt; [0/0]</span></span>
-<span id="cb7-67"><a href="#cb7-67" tabindex="-1"></a><span class="ex">CPU</span> Time spent: 160.590864s<span class="kw">;</span> <span class="ex">Max</span> Memory usage: 1.7e+03Mb.</span>
+<span id="cb7-67"><a href="#cb7-67" tabindex="-1"></a><span class="ex">CPU</span> Time spent: 160.597656s<span class="kw">;</span> <span class="ex">Max</span> Memory usage: 2.2e+03Mb.</span>
 <span id="cb7-68"><a href="#cb7-68" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb7-69"><a href="#cb7-69" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb7-70"><a href="#cb7-70" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb7-71"><a href="#cb7-71" tabindex="-1"></a><span class="co">#&gt; Combining AncesTrees in Sections...</span></span>
-<span id="cb7-72"><a href="#cb7-72" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 162.684252s; Max Memory usage: 1.7e+03Mb.</span></span>
+<span id="cb7-72"><a href="#cb7-72" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 162.706156s; Max Memory usage: 2.2e+03Mb.</span></span>
 <span id="cb7-73"><a href="#cb7-73" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb7-74"><a href="#cb7-74" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb7-75"><a href="#cb7-75" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb7-76"><a href="#cb7-76" tabindex="-1"></a><span class="co">#&gt; Finalizing...</span></span>
 <span id="cb7-77"><a href="#cb7-77" tabindex="-1"></a><span class="co">#&gt; Number of not mapping SNPs: 414</span></span>
 <span id="cb7-78"><a href="#cb7-78" tabindex="-1"></a><span class="co">#&gt; Number of flipped SNPs    : 77</span></span>
-<span id="cb7-79"><a href="#cb7-79" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 166.016576s; Max Memory usage: 1.7e+03Mb.</span></span>
+<span id="cb7-79"><a href="#cb7-79" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 166.004011s; Max Memory usage: 2.2e+03Mb.</span></span>
 <span id="cb7-80"><a href="#cb7-80" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb7-81"><a href="#cb7-81" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb7-82"><a href="#cb7-82" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
