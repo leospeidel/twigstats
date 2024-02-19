@@ -14,8 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-The main use-case of Twigstats is to compute f2-statistics for pairs of populations.<br/>
-The output can then directly be fed into functions of the admixtools2 R package (https://uqrmaie1.github.io/admixtools/index.html) to compute any other f-statistic.<br>
+The main use-case of Twigstats is to compute <b>f2-statistics for pairs of populations</b>. The output can then directly be fed into functions of the admixtools2 R package (https://uqrmaie1.github.io/admixtools/index.html) to <b>compute any other f-statistic</b>.<br>
 
 Each function implemented in the Twigstats package is described on this page: [leospeidel.com/twigstats/reference](https://leospeidel.com/twigstats_old/reference).
 
@@ -36,7 +35,7 @@ The central function is called ```f2_blocks_from_Relate()``` which takes Relate 
 Please type ```?f2_blocks_from_Relate``` for more details:<br>
 
 We will illustrate a basic Twigstats run using example files that are included in the Twigstats package.
-In this example, population PX is admixed between populations P2 and P3, with a mixture proportion of 80% and 20%, respectively.
+In this example, population PX is admixed between populations P2 and P3, with a mixture proportion of 20% and 80%, respectively.
 
 These lines assign filenames to variables ```file_anc```, ```file_mut```, ```poplabels```, and ```file_map```.
 ```{r}
@@ -79,6 +78,8 @@ f4(f2_blocks1, "P4", "P3", "P2", "PX")
 #with twigstats ascertainment
 f4(f2_blocks2, "P4", "P3", "P2", "PX")
 ```
+If PX exclusively clustered with P2 and did not carry gene flow from P3, we expect this f4 statistic to not be significantly deviating from 0.
+We observe a highly significant attraction of P3 to PX, especially when ascertaining coalescences of the last 500 generations using Twigstats, consistent with PX being a mixture of P2 and P3.
 
 <br/>
 
@@ -130,4 +131,4 @@ f4(f2_blocks1, "P4", "P3", "P2", "PX")
 #with twigstats ascertainment
 f4(f2_blocks2, "P4", "P3", "P2", "PX")
 ```
-
+As before, we find a highly significant attraction of P3 to PX using Twigstats, consistent with PX being a mixture of P2 and P3.

@@ -31,11 +31,15 @@ To look up where preprepared input files are stored on your computer, please exe
 ```
 print(system.file("example/", package = "twigstats"))
 ```
+In this example, we have already executed the steps detailed under "Preparing the data", so you can skip ahead to "Running Relate".
 
 ## Preparing the data
 
-We imputed the ancient genomes with GLIMPSE (https://odelaneau.github.io/GLIMPSE/) using the 1000 Genomes Project reference panel.
-We then merged these imputed genomes with a subset of the 1000 Genomes Project dataset. You can see the samples we will use here in the box below:
+Here, we will follow the standard pipeline for imputing ancient shotgun genomes. These steps have already been executed and you can skip ahead to "Running Relate" if you like. 
+
+#### Imputation
+
+We imputed the ancient genomes with GLIMPSE (Rubinacci et al, Nature Genetics, 2021; https://odelaneau.github.io/GLIMPSE/) and using the 1000 Genomes Project reference panel. We then merged these imputed genomes with a subset of the 1000 Genomes Project dataset. You can see the genomes we will use here in the box below:
 
 ```{r, style="max-height: 200px;"}
 popl <- read.table(system.file("example/1000GP_Phase3_sub_aDNA.poplabels", package = "twigstats"), header = T)
@@ -59,13 +63,18 @@ bcftools query -f "%CHROM %BP\n" > BP_chr1.txt
 ```
 We could alternatively use bcftools to annotate each SNP with an INFO score (see [impute-info](https://samtools.github.io/bcftools/howtos/plugins.html) plugin of bcftools) and require a minimum INFO score for each SNP. This score measures how well a SNP is imputed using surrounding haplotype information. 
 
+#### Subsetting to transversions (optional)
+
 We may also opt to only analyse transversions, which we can extract using the following command
 ```
 bcftools view -i 'TYPE="snp" && ( (REF!="A" || ALT!="G") && (REF!="G" || ALT!="A") && (REF!="C" || ALT!="T") && (REF!="T" || ALT!="C"))' 1000G_aDNA_nomiss_chr1.vcf.gz -O z -o 1000G_aDNA_transv_chr1.vcf.gz
 ```
 
+#### Conversion to Relate input format
+
 Once we have a VCF containing SNPs that we are happy with, we can now use a script provided by the Relate package to convert this into the Relate input format. For details please consult the [Relate documentation](https://myersgroup.github.io/relate/):
 ```
+#convert from vcf to haps/sample
 ~/Documents/genomics/software/relate/bin/RelateFileFormats \
     --mode ConvertFromVcf \
   -i 1000G_aDNA_transv_chr1 \
@@ -75,6 +84,7 @@ Once we have a VCF containing SNPs that we are happy with, we can now use a scri
 gzip -f 1000G_aDNA_transv_chr1.haps
 gzip -f 1000G_aDNA_transv_chr1.sample
 
+#apply a genomic mask and polarise alleles according to ancestral/derived state
 ~/Documents/genomics/software/relate/scripts/PrepareInputFiles/PrepareInputFiles.sh \
     --haps 1000G_aDNA_transv_chr1.haps.gz \
 	--sample 1000G_aDNA_transv_chr1.sample.gz \
@@ -88,7 +98,7 @@ Here, we used a [human ancestral genome](https://ftp.1000genomes.ebi.ac.uk/vol1/
 
 ## Running Relate
 
-Once we have prepared the data, we can now run Relate. Please consult the [Relate documentation](https://myersgroup.github.io/relate/) for details on how to run Relate. Here, we will run Relate using a mutation rate of 4e-9, corresponding approximately to the average transversion mutation rate in humans, and we will use pre-inferred coalescence rates stored in ```1000G_auto.coal```.
+Once we have prepared the data, we can now run Relate (Speidel et al, Nature Genetics 2019; MBE 2021). Please consult the [Relate documentation](https://myersgroup.github.io/relate/) for details on how to run Relate. Here, we will run Relate using a mutation rate of 4e-9, corresponding approximately to the average transversion mutation rate in humans, and we will use pre-inferred coalescence rates stored in ```1000G_auto.coal```.
 
 ```{bash}
 path="/opt/homebrew/lib/R/4.3/site-library/twigstats/example/"
@@ -114,9 +124,9 @@ gzip -f 1000G_aDNA_mask_transv_chr1.mut
 Finally, once we have inferred Relate trees, we can now run Twigstats. 
 We will aim to infer an admixture in Anglo-Saxon individuals between the preceding British Iron/Roman Age and Early Iron Age Scandinavia.
 
-To illistrate a power gain by using Twigstats, we will run Twigstats in two different ways: First, we will compute regular f2-statistics and second, we will compute f2-statistics on only recent coalescences.
+To illustrate a power gain by using Twigstats, we will run Twigstats in two different ways: First, we will compute regular f2-statistics and second, we will compute f2-statistics on only recent coalescences.
 
-We first assign filenames to variables.
+We first load the Twigstats package and assign filenames to variables.
 ```{r}
 library(twigstats)
 
@@ -126,7 +136,7 @@ poplabels <- system.file("example/1000GP_Phase3_sub_aDNA.poplabels", package = "
 file_map  <- system.file("example/genetic_map_combined_b37_chr1.txt", package = "twigstats")
 ```
 
-Next, we compute regular f2 statistics without a time cutoff:
+Next, we compute regular f2 statistics without a time cutoff, and then infer the admixture proportion using an f4-ratio statistic:
 ```{r}
 #Calculate f2s between all pairs of populations
 f2_blocks <- f2_blocks_from_Relate(file_anc, file_mut, poplabels, file_map, use_muts = T)
@@ -140,5 +150,5 @@ We now compute f2 statistics on lineages of the past 500 generations using Twigs
 f2_blocks <- f2_blocks_from_Relate(file_anc, file_mut, poplabels, file_map, t = 500)
 f4_ratio(f2_blocks, popX="England_Saxon.SG", popI="Ireland_BA.SG", pop1="Britain.IronRoman.SG", pop2="Scandinavian_Peninsula_EIA(I).SG", popO="YRI")
 ```
-The standard errors are much reduced and we get a meaningful admixture proportion! Note that the standard error is still relatively large (though excludes 0 and 1 as feasible proportions). The obvious way to improve power is to use all other chromosomes; here we only used chromosome 1. Additionally, we could build Relate trees with more samples to get more accurate contrains on dates.
+The standard errors are much reduced and we get a meaningful <b>admixture proportion of approximately 38% Scandinavian EIA ancestry</b>! Note that the standard error is still relatively large (though excludes 0 and 1 as feasible proportions). The obvious way to improve power is to use all other chromosomes; here we only used chromosome 1. Additionally, we could build Relate trees with more samples to get more accurate constrains on dates.
 

@@ -101,10 +101,10 @@
 
     
     
-<p>The main use-case of Twigstats is to compute f2-statistics for pairs
-of populations.<br> The output can then directly be fed into functions
-of the admixtools2 R package (<a href="https://uqrmaie1.github.io/admixtools/index.html" class="external-link uri">https://uqrmaie1.github.io/admixtools/index.html</a>) to
-compute any other f-statistic.<br></p>
+<p>The main use-case of Twigstats is to compute <b>f2-statistics for
+pairs of populations</b>. The output can then directly be fed into
+functions of the admixtools2 R package (<a href="https://uqrmaie1.github.io/admixtools/index.html" class="external-link uri">https://uqrmaie1.github.io/admixtools/index.html</a>) to
+<b>compute any other f-statistic</b>.<br></p>
 <p>Each function implemented in the Twigstats package is described on
 this page: <a href="https://leospeidel.com/twigstats_old/reference">leospeidel.com/twigstats/reference</a>.</p>
 <p>Here, we will demonstrate key features using an example stored under
@@ -134,8 +134,8 @@ which takes Relate output files as input.<br> Please type
 <code><a href="../reference/f2_blocks_from_Relate.html">?f2_blocks_from_Relate</a></code> for more details:<br></p>
 <p>We will illustrate a basic Twigstats run using example files that are
 included in the Twigstats package. In this example, population PX is
-admixed between populations P2 and P3, with a mixture proportion of 80%
-and 20%, respectively.</p>
+admixed between populations P2 and P3, with a mixture proportion of 20%
+and 80%, respectively.</p>
 <p>These lines assign filenames to variables <code>file_anc</code>,
 <code>file_mut</code>, <code>poplabels</code>, and
 <code>file_map</code>.</p>
@@ -194,6 +194,11 @@ genealogies.</li>
 <span><span class="co">#&gt;   pop1  pop2  pop3  pop4       est        se     z         p</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P4    P3    P2    PX    0.000<span style="text-decoration: underline;">635</span> 0.000<span style="text-decoration: underline;">025</span>3  25.1 1.37<span style="color: #949494;">e</span><span style="color: #BB0000;">-138</span></span></span></code></pre></div>
+<p>If PX exclusively clustered with P2 and did not carry gene flow from
+P3, we expect this f4 statistic to not be significantly deviating from
+0. We observe a highly significant attraction of P3 to PX, especially
+when ascertaining coalescences of the last 500 generations using
+Twigstats, consistent with PX being a mixture of P2 and P3.</p>
 <p><br></p>
 </div>
 </div>
@@ -267,6 +272,8 @@ to calculate f2 statistics at 1240k sites</li>
 <span><span class="co">#&gt;   pop1  pop2  pop3  pop4       est        se     z         p</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P4    P3    P2    PX    0.000<span style="text-decoration: underline;">642</span> 0.000<span style="text-decoration: underline;">028</span>1  22.9 9.35<span style="color: #949494;">e</span><span style="color: #BB0000;">-116</span></span></span></code></pre></div>
+<p>As before, we find a highly significant attraction of P3 to PX using
+Twigstats, consistent with PX being a mixture of P2 and P3.</p>
 </div>
 </div>
   </div>
