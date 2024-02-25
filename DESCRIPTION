@@ -28,6 +28,6 @@ Suggests:
 Config/testthat/edition: 3
 RoxygenNote: 7.2.3
 Depends: 
-    R (>= 3.6.0)
+    R (>= 3.6.0),
 		dplyr
 VignetteBuilder: knitr

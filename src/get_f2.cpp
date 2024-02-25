@@ -1023,7 +1023,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 		binsize_ = as<double>(blgsize);
 	}
 	bool isM = true;
-	if(binsize_ > 100) isM = false;
+	if(binsize_ >= 1) isM = false;
 	if(isM) binsize_ *= 100; //convert to cM
 
 	std::string filename_poplabels = as<std::string>(poplabels);
