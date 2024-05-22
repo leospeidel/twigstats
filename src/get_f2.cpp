@@ -154,6 +154,26 @@ traversef2(const Node& n, const Sample& sample, std::vector<float>& freqs, arma:
 
 }
 
+void
+traverseTMRCA(const MarginalTree& mtr, std::vector<Leaves>& desc, arma::mat& f2, float factor, std::vector<float>& coords, float t){
+	
+	float coords_value;
+	for(std::vector<Node>::const_iterator it_node = std::next(mtr.tree.nodes.begin(), (mtr.tree.nodes.size() + 1.0)/2.0); it_node != mtr.tree.nodes.end(); it_node++){
+	
+		coords_value = coords[(*it_node).label];
+		if(coords_value > t){
+      coords_value = t;
+		}
+		for(int i = 0; i < desc[(*(*it_node).child_left).label].member.size(); i++){
+			for(int j = 0; j < desc[(*(*it_node).child_right).label].member.size(); j++){
+				f2(desc[(*(*it_node).child_left).label].member[i],desc[(*(*it_node).child_right).label].member[j]) += factor * coords_value;
+				f2(desc[(*(*it_node).child_right).label].member[j],desc[(*(*it_node).child_left).label].member[i]) += factor * coords_value;
+			}
+		}
+	}
+
+}
+
 
 //' Function to calculate f2 statistics from Relate trees for pairs of populations specified in poplabels.
 //'
@@ -1000,7 +1020,7 @@ NumericVector f2_blocks_from_RelateAges( SEXP pref, SEXP file_mut, Nullable<doub
 //' @param file_map File prefix of recombination map.
 //' @param file_out File prefix of output files
 //' @param poplabels Filename of poplabels file
-//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
+//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 1 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
 //' @param pops (Optional) Populations for which data should be extracted. Names need to match the second column of the poplabels file
 //' @param chrs (Optional) Vector of chromosome IDs
 //' @return void. Write three files idfile, paint, rec to disc. 
@@ -1284,7 +1304,6 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 				if(!first) os_rec << current_pos << " " << rec/1e2 << "\n";
 				first = false;
 
-				//std::cerr << pos.size() << " " << gpos.size() << std::endl;
 				for(int j = 1; j < pos.size(); j++){
 					rec = (gpos[j] - gpos[j-1])/(pos[j] - pos[j-1]);
 					assert(rec >= 0.0);
@@ -1318,8 +1337,22 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 						for(int k = 0; k < desc[sib].member.size(); k++){
 							if(group_used[ sample.group_of_haplotype[desc[sib].member[k]] ] != 0) nonself++;
 						}
+						/*
+						if(pos[0] == 509747 && i == 0){
+							std::cerr << i << " " << nonself << " " << desc[sib].member.size() << std::endl;
+							for(int k = 0; k < group_used.size(); k++){
+							  std::cerr << group_used[k] << " ";
+							}
+							std::cerr << std::endl;
+							for(int k = 0; k < desc[sib].member.size(); k++){
+								std::cerr << desc[sib].member[k] << " of group " << sample.group_of_haplotype[desc[sib].member[k]] << std::endl;
+							}
+						}
+						*/
 						//draw a random number between 0 and nonself
 						int copyind = (int)nonself*runif(rng);
+
+						//if(pos[0] == 500152) std::cerr << copyind << std::endl;
 
 						if(nonself > 0){
 							int count = 0;
@@ -1327,6 +1360,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 								group2 = sample.group_of_haplotype[desc[sib].member[k]];    
 								if( group_used[group2] != 0 ){
 									if(count == copyind){
+										//if(pos[0] == 500152) std::cerr << "ind i = " << i << " has " << desc[sib].member[k] << " of group " << group2 << std::endl;
 										for(int j = 0; j < pos.size(); j++){
 											painting_profile[i].push_back(desc[sib].member[k]+1);
 										}
@@ -1596,4 +1630,252 @@ NumericVector ExpPaintingProfile( SEXP file_anc, SEXP file_mut, SEXP poplabels, 
 
 }
 
+
+//' Function to calculate TMRCAs from Relate trees for pairs of populations specified in poplabels.
+//'
+//' This function will calculate TMRCAs in blocks of prespecified size for all pairs of populations specified in the poplabels file.
+//' Please refer to the Relate documentation for input file formats (https://myersgroup.github.io/relate/).
+//'
+//' @param file_anc Filename of anc file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+//' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+//' @param file_out Filename of output file.
+//' @param poplabels Filename of poplabels file
+//' @param t (Optional) Time cutoff in generations. Any coalescences older that t will be set to t in the analysis. Default: t = Inf.
+//' @param chrs (Optional) Vector of chromosome IDs
+//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
+//' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
+//' @return 3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.
+//' @examples
+//' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
+//' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
+//' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
+//' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+//'
+//' #Calculate f2s between all pairs of populations
+//' TMRCA_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map)
+//' @export
+// [[Rcpp::export]]
+void TMRCA_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_out, SEXP file_map = R_NilValue, Nullable<CharacterVector> chrs = R_NilValue, Nullable<double> t = R_NilValue, Nullable<double> blgsize = R_NilValue) {
+
+	std::string filename_poplabels = as<std::string>(poplabels);
+	std::vector<std::string> filename_anc, filename_mut, filename_rec;
+	std::string map_ = "";
+	if(file_map != R_NilValue){
+		map_ = as<std::string>(file_map);
+	}
+
+	double t_ = std::numeric_limits<double>::infinity();
+	if(t.isNotNull()){
+		t_ = as<double>(t);
+	}
+
+	CharacterVector chrs_;
+	if(chrs.isNotNull()){
+		chrs_ = chrs;
+		for(int i = 0; i < chrs_.size(); i++){
+			filename_anc.push_back( as<std::string>(file_anc) + "_chr" + as<std::string>(chrs_[i]) + ".anc" );
+			filename_mut.push_back( as<std::string>(file_mut) + "_chr" + as<std::string>(chrs_[i]) + ".mut" );
+			filename_rec.push_back( map_ + "_chr" + as<std::string>(chrs_[i]) + ".txt" );
+		}
+	}else{
+		chrs_ = CharacterVector::create("1");
+		filename_anc.push_back( as<std::string>(file_anc) );
+		filename_mut.push_back( as<std::string>(file_mut) );
+		filename_rec.push_back( map_ );
+	}
+
+	double binsize_ = 0.05;
+	if(blgsize.isNotNull()){
+		binsize_ = as<double>(blgsize);
+	}
+
+	bool isM = true;
+	if(binsize_ > 100) isM = false;
+	if(isM){
+		if(map_ == ""){
+			Rcpp::stop("Need to specify recombination map when blgsize < 100");
+		}
+	}
+
+	Sample sample;
+	sample.Read(filename_poplabels);
+
+	std::cerr << "Computing pairwise f2 for " << sample.groups.size() + 1 << " groups." << std::endl;
+	std::cerr << "blgsize: " << binsize_;
+	if(isM) std::cerr << "M" << std::endl;
+	if(!isM) std::cerr << "bp" << std::endl;
+	std::cerr << std::endl;
+
+	MarginalTree mtr; //stores marginal trees. mtr.pos is SNP position at which tree starts, mtr.tree stores the tree
+	Muts::iterator it_mut; //iterator for mut file
+	float num_bases_tree_persists = 0.0;
+
+	////////// 1. Read one tree at a time /////////
+
+  //as output I want a data frame with columns blockID, chr, start, end, ind1, ind2, pop1, pop2, f2
+  
+	std::vector<float> numsnps(1000), chrom(1000), blockBP(1000);
+	arma::cube f2_block = arma::zeros<arma::cube>(sample.group_of_haplotype.size(), sample.group_of_haplotype.size(), 1000);
+	
+	int blockID = 0;
+	float num_infSNPs = 0.0;
+	for(int chr = 0; chr < filename_anc.size(); chr++){
+
+		//We open anc file and read one tree at a time. File remains open until all trees have been read OR ancmut.CloseFiles() is called.
+		//The mut file is read once, file is closed after constructor is called.
+		AncMutIterators ancmut(filename_anc[chr], filename_mut[chr]);
+		Data data(ancmut.NumTips(), ancmut.NumSnps());
+
+		map recmap(filename_rec[chr].c_str());
+		int irec = 0;
+
+		if( blockID+100 >= size(f2_block)[2] ){
+			f2_block.resize(sample.group_of_haplotype.size(), sample.group_of_haplotype.size(), size(f2_block)[3] + 1000);
+			numsnps.resize(numsnps.size() + 1000);
+			chrom.resize(chrom.size() + 1000);
+			blockBP.resize(blockBP.size() + 1000);
+		}
+
+		//mtr stores the marginal tree, it_mut points to the first SNP at which the marginal tree starts.
+		//If marginal tree has no SNPs mapping to it, it_mut points to the first SNP of the following tree that has a SNP mapping to it
+		num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
+
+		std::vector<float> freqs(2, 0.0), coords(2*data.N-1, 0.0);
+		std::vector<Leaves> desc;
+		int current_pos = 0;
+		double current_rec = 0;
+		double rec;
+		double factor = 0.0;
+		int percentage = 0;
+		//iterate through whole file
+		std::cerr << "Block: " << blockID << "\r";
+		while(num_bases_tree_persists >= 0.0){
+
+			mtr.tree.GetCoordinates(coords);
+			mtr.tree.FindAllLeaves(desc);
+
+			if(((*it_mut).tree % (int)(ancmut.NumTrees()/100)) == 0){
+				std::cerr << "Block: " << blockID << ", " << "[" << percentage << "%]\r";
+				Rcpp::checkUserInterrupt();
+				percentage++;
+				std::cerr.flush();
+			}
+
+			//compute genetic distance at the start of this tree
+			if(isM){
+				if(recmap.bp[irec] >= (*it_mut).pos){
+					if(irec > 0){
+						rec = ((double)(*it_mut).pos - recmap.bp[irec-1])/(recmap.bp[irec] - recmap.bp[irec-1]) * (recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) + recmap.gen_pos[irec-1];
+					}else{
+						rec = ((double)(*it_mut).pos)/(recmap.bp[irec]) * (recmap.gen_pos[irec]);         
+					}
+				}else{
+					while( recmap.bp[irec] < (*it_mut).pos ){
+						irec++;
+						if(irec == recmap.bp.size()){
+							irec--;
+							break;
+						}
+					}
+					if(irec == recmap.bp.size()-1){
+						rec = recmap.gen_pos[irec]/recmap.bp[irec] * ((*it_mut).pos - recmap.bp[irec]) + recmap.gen_pos[irec];
+					}else{
+						assert(recmap.bp[irec] >= (*it_mut).pos);
+						assert(irec > 0);
+						rec = ((double)(*it_mut).pos - recmap.bp[irec-1])/(recmap.bp[irec] - recmap.bp[irec-1]) * (recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) + recmap.gen_pos[irec-1];
+					}
+				}
+				assert(rec >= 0.0);
+			}
+
+			//for each tree, calculate f2 stats given sample assignment to pops
+			if( (!isM && (*it_mut).pos - current_pos > binsize_) || (isM && rec/100.0 - current_rec > binsize_) ){
+
+				Rcpp::checkUserInterrupt();
+				if((int)std::round(num_infSNPs) > 0){
+					for(arma::cube::slice_iterator it_c = f2_block.begin_slice(blockID); it_c != f2_block.end_slice(blockID); it_c++){
+						*it_c /= factor;
+					}
+					numsnps[blockID] = std::round(num_infSNPs);
+					chrom[blockID] = chr;
+					blockBP[blockID] = current_pos;
+					num_infSNPs = 0;
+					factor = 0.0;
+					blockID++;
+				}
+				if( blockID+100 >= size(f2_block)[2] ){
+					f2_block.resize(sample.group_of_haplotype.size(), sample.group_of_haplotype.size(), size(f2_block)[2] + 1000);
+					numsnps.resize(numsnps.size() + 1000);
+					chrom.resize(chrom.size() + 1000);
+					blockBP.resize(blockBP.size() + 1000);
+				}
+				if(isM){
+					while(rec/100.0 - current_rec > binsize_){
+						current_rec += binsize_; 
+					}
+					current_pos = (*it_mut).pos;
+				}else{
+					while((*it_mut).pos - current_pos > binsize_){
+						current_pos += binsize_; 
+					}
+				}
+
+			}
+
+			//now populate values for this tree
+			factor += num_bases_tree_persists;
+			int tree = (*it_mut).tree;
+			while((*it_mut).tree == tree){
+				num_infSNPs++;
+				it_mut++;
+			}
+			traverseTMRCA(mtr, desc, f2_block.slice(blockID), num_bases_tree_persists, coords, t_);
+
+			num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
+		}
+
+		if((int)std::round(num_infSNPs) > 0){
+			for(arma::cube::slice_iterator it_c = f2_block.begin_slice(blockID); it_c != f2_block.end_slice(blockID); it_c++){
+				*it_c /= factor;
+			}
+			numsnps[blockID] = std::round(num_infSNPs);
+			chrom[blockID] = chr;
+			blockBP[blockID] = current_pos;
+			num_infSNPs = 0;
+			blockID++;
+		}
+
+	}
+
+	//Output to file
+	f2_block.reshape(sample.group_of_haplotype.size(), sample.group_of_haplotype.size(), blockID);
+	numsnps.resize(blockID);
+	chrom.resize(blockID);
+	blockBP.resize(blockID);
+
+	std::ofstream os(as<std::string>(file_out) + ".tmrca");
+
+	os << "blockID\tCHR\tBP\tHAPID1\tHAPID2\tIND1\tIND2\tPOP1\tPOP2\tTMRCA\n";
+
+	//blockID chr bp ind1 ind2 pop1 pop2 TMRCA
+  for(int b = 0; b < blockID; b++){
+		int k = 0;
+		for(arma::cube::slice_iterator it_c = f2_block.begin_slice(b); it_c != f2_block.end_slice(b); it_c++){
+
+			int i = k/f2_block.n_rows;
+			int j = k%f2_block.n_rows;
+
+			os << b << "\t" << chrs_[chrom[b]] << "\t" << blockBP[b] << "\t" << i << "\t" << j << "\t" << sample.ind[(int) (i/2.0)] << "\t" << sample.ind[(int) (j/2.0)] << "\t" << 
+				sample.groups[sample.group_of_haplotype[i]] << "\t" << sample.groups[sample.group_of_haplotype[j]] << "\t" << *it_c << "\n";
+
+			k++;
+		}
+	}
+
+  os.close();
+
+	std::cerr << "Block: " << blockID << ", " << "[100%]\r";
+	std::cerr << std::endl;
+
+}
 

@@ -26,7 +26,7 @@ Painting(
 
 \item{poplabels}{Filename of poplabels file}
 
-\item{blgsize}{(Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.}
+\item{blgsize}{(Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 1 or greater, if will be interpreted as base pair distance rather than centimorgan distance.}
 
 \item{pops}{(Optional) Populations for which data should be extracted. Names need to match the second column of the poplabels file}
 

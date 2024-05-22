@@ -92,7 +92,7 @@ f2_blocks_from_RelateAges <- function(pref, file_mut, blgsize = NULL, transition
 #' @param file_map File prefix of recombination map.
 #' @param file_out File prefix of output files
 #' @param poplabels Filename of poplabels file
-#' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
+#' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 1 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
 #' @param pops (Optional) Populations for which data should be extracted. Names need to match the second column of the poplabels file
 #' @param chrs (Optional) Vector of chromosome IDs
 #' @return void. Write three files idfile, paint, rec to disc. 
@@ -137,5 +137,32 @@ Painting <- function(file_anc, file_mut, file_map, file_out, poplabels, blgsize 
 #' @export
 ExpPaintingProfile <- function(file_anc, file_mut, poplabels, pops = NULL, chrs = NULL) {
     .Call(`_twigstats_ExpPaintingProfile`, file_anc, file_mut, poplabels, pops, chrs)
+}
+
+#' Function to calculate TMRCAs from Relate trees for pairs of populations specified in poplabels.
+#'
+#' This function will calculate TMRCAs in blocks of prespecified size for all pairs of populations specified in the poplabels file.
+#' Please refer to the Relate documentation for input file formats (https://myersgroup.github.io/relate/).
+#'
+#' @param file_anc Filename of anc file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+#' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+#' @param file_out Filename of output file.
+#' @param poplabels Filename of poplabels file
+#' @param t (Optional) Time cutoff in generations. Any coalescences older that t will be set to t in the analysis. Default: t = Inf.
+#' @param chrs (Optional) Vector of chromosome IDs
+#' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
+#' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
+#' @return 3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.
+#' @examples
+#' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
+#' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
+#' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
+#' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+#'
+#' #Calculate f2s between all pairs of populations
+#' TMRCA_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map)
+#' @export
+TMRCA_from_Relate <- function(file_anc, file_mut, poplabels, file_out, file_map = NULL, chrs = NULL, t = NULL, blgsize = NULL) {
+    invisible(.Call(`_twigstats_TMRCA_from_Relate`, file_anc, file_mut, poplabels, file_out, file_map, chrs, t, blgsize))
 }
 

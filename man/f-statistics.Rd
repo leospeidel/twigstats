@@ -5,7 +5,7 @@
 \alias{jackknife}
 \title{Function implementing the F4-ratio statistic}
 \usage{
-f4_ratio(f2_blocks, popO, popI, pop1, pop2, popX)
+f4_ratio(f2_blocks, popO, popI, pop1, pop2, popX, mode = 1)
 
 jackknife(df_jack)
 }
