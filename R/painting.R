@@ -9,6 +9,7 @@ library(dplyr)
 #' @param filename_idfile Filename of idfile. Output of Painting.
 #' @param nboot Number of bootstrap samples.
 #' @param blocksize Number of blocks to combine for the bootstrap. E.g. if Painting was run with a blgsize of 1e-5 Morgans, blocksize should be 5000 to achieve a blocksize of 5cM.
+#' @param use_IDs If TRUE, compute profile for each sample. If FALSE (default), compute profile for each group as specified in the second column of the idfile.
 #' @return Returns a data frame with copying proportions per bootstrap sample.
 #' @examples
 #' #This path stores files precomputed using Painting().
@@ -19,13 +20,17 @@ library(dplyr)
 #' df <- PaintingProfile(c(paste0(path,prefix,"_painting.txt.gz")), paste0(path,prefix,"_idfile.txt.gz"), nboot = 10, blocksize = 5000)
 #' head(df)
 #' @export
-PaintingProfile <- function(filename_painting, filename_idfile, nboot, blocksize){
+PaintingProfile <- function(filename_painting, filename_idfile, nboot, blocksize, use_IDs = FALSE){
 
 	if (nboot <= 0) {
 		stop("Value of nboot needs to be at least 1.")
 	}
 	if (blocksize <= 0) {
 		stop("Value of blocksize needs to be at least 1.")
+	}
+  idcol <- 2
+	if(use_IDs){
+    idcol <- 1
 	}
 
 	print_progress_bar <- function(iteration, total, length = 50) {
@@ -55,7 +60,9 @@ PaintingProfile <- function(filename_painting, filename_idfile, nboot, blocksize
 		n <- ncol(df_chr)
 		df_chr <- ids[t(as.matrix(df_chr)),2] 
 
-		df_chr <- data.frame(POP = sort(rep(ids[,2], n)), CHR = chr, pos_id = rep(1:n,nrow(ids)), labs = df_chr)
+		#POP is the ID of the population
+		#labs is the group I copied from
+		df_chr <- data.frame(POP = sort(rep(ids[,idcol], n)), CHR = chr, pos_id = rep(1:n,nrow(ids)), labs = df_chr)
 		df_chr$block <- cut(df_chr$pos_id, breaks = seq(1,n,blocksize))
 		df_chr %>% group_by(POP, labs, CHR, block) %>% summarize(count = length(POP)) -> df_chr
 		df <- bind_rows(df, df_chr)

@@ -1240,7 +1240,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 				if(!isM){
 					assert((current_ipos+1)*binsize_ >= current_pos);
 					assert((current_ipos+1)*binsize_ <= next_pos);
-					for(int bp = (current_ipos+1)*binsize_; bp < next_pos; bp += binsize_){
+					for(int bp = (current_ipos+1)*binsize_; bp <= next_pos; bp += binsize_){
 						if(recmap.bp[irec] >= bp){
 							if(irec > 0){
 								gpos.push_back(((double)bp - recmap.bp[irec-1])/(recmap.bp[irec] - recmap.bp[irec-1]) * (recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) + recmap.gen_pos[irec-1]);
@@ -1268,7 +1268,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 				}else{
 					assert((current_igenpos+1)*binsize_ >= current_genpos);
 					assert((current_igenpos+1)*binsize_ <= genpos);
-					for(double gbp = (current_igenpos + 1.0)*binsize_; gbp < genpos; gbp += binsize_){
+					for(double gbp = (current_igenpos + 1.0)*binsize_; gbp <= genpos; gbp += binsize_){
 						if(recmap.gen_pos[irec] >= gbp){
               assert(recmap.gen_pos[irec-1] <= gbp);
 							if(irec > 0){
