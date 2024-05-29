@@ -62,7 +62,7 @@ PaintingProfile <- function(filename_painting, filename_idfile, nboot, blocksize
 
 		#POP is the ID of the population
 		#labs is the group I copied from
-		df_chr <- data.frame(POP = sort(rep(ids[,idcol], n)), CHR = chr, pos_id = rep(1:n,nrow(ids)), labs = df_chr)
+		df_chr <- data.frame(POP = rep(ids[,idcol], each = n), CHR = chr, pos_id = rep(1:n,nrow(ids)), labs = df_chr)
 		df_chr$block <- cut(df_chr$pos_id, breaks = seq(1,n,blocksize))
 		df_chr %>% group_by(POP, labs, CHR, block) %>% summarize(count = length(POP)) -> df_chr
 		df <- bind_rows(df, df_chr)
