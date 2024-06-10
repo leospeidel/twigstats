@@ -108,6 +108,24 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// TMRCAdist_from_Relate
+void TMRCAdist_from_Relate(SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_out, NumericVector epochs, SEXP file_map, Nullable<CharacterVector> chrs, Nullable<double> t, Nullable<double> blgsize);
+RcppExport SEXP _twigstats_TMRCAdist_from_Relate(SEXP file_ancSEXP, SEXP file_mutSEXP, SEXP poplabelsSEXP, SEXP file_outSEXP, SEXP epochsSEXP, SEXP file_mapSEXP, SEXP chrsSEXP, SEXP tSEXP, SEXP blgsizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type file_anc(file_ancSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type file_mut(file_mutSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type poplabels(poplabelsSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type file_out(file_outSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type epochs(epochsSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type file_map(file_mapSEXP);
+    Rcpp::traits::input_parameter< Nullable<CharacterVector> >::type chrs(chrsSEXP);
+    Rcpp::traits::input_parameter< Nullable<double> >::type t(tSEXP);
+    Rcpp::traits::input_parameter< Nullable<double> >::type blgsize(blgsizeSEXP);
+    TMRCAdist_from_Relate(file_anc, file_mut, poplabels, file_out, epochs, file_map, chrs, t, blgsize);
+    return R_NilValue;
+END_RCPP
+}
 
 RcppExport SEXP run_testthat_tests(SEXP);
 
@@ -117,6 +135,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_twigstats_Painting", (DL_FUNC) &_twigstats_Painting, 8},
     {"_twigstats_ExpPaintingProfile", (DL_FUNC) &_twigstats_ExpPaintingProfile, 5},
     {"_twigstats_TMRCA_from_Relate", (DL_FUNC) &_twigstats_TMRCA_from_Relate, 8},
+    {"_twigstats_TMRCAdist_from_Relate", (DL_FUNC) &_twigstats_TMRCAdist_from_Relate, 9},
     {"run_testthat_tests", (DL_FUNC) &run_testthat_tests, 1},
     {NULL, NULL, 0}
 };

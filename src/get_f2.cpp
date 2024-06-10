@@ -13,6 +13,23 @@
 
 using namespace Rcpp;
 
+
+int findInterval(const std::vector<float>& boundaries, float value) {
+    auto it = std::lower_bound(boundaries.begin(), boundaries.end(), value);
+    
+    if (it == boundaries.begin()) {
+        // Value is less than the first boundary
+			  std::cerr << "Epoch out of bounds on the lower side" << std::endl;
+        return -1;  // Indicates out of bounds on the lower side
+    } else if (it == boundaries.end()) {
+        // Value is greater than or equal to the last boundary
+        return boundaries.size()-1;  // Indicates out of bounds on the upper side
+    } else {
+        // Value is between boundaries
+        return std::distance(boundaries.begin(), it) - 1;
+    }
+}
+
 void
 traversef2(const Node& n, const Sample& sample, std::vector<float>& freqs, arma::mat& f2, float factor, std::vector<float>& coords, bool correct, double time_cutoff = std::numeric_limits<double>::infinity(), double min_cutoff = 0, double minfreq = 1){
 	double overlap = 1.0;
@@ -174,6 +191,26 @@ traverseTMRCA(const MarginalTree& mtr, std::vector<Leaves>& desc, arma::mat& f2,
 
 }
 
+void
+traverseTMRCAdist(const MarginalTree& mtr, std::vector<Leaves>& desc, std::vector<std::vector<std::vector<float>>>& tmrcas, std::vector<float>& epochs, float factor, std::vector<float>& coords){
+
+	int ep = 0;
+	float coords_value;
+	for(std::vector<Node>::const_iterator it_node = std::next(mtr.tree.nodes.begin(), (mtr.tree.nodes.size() + 1.0)/2.0); it_node != mtr.tree.nodes.end(); it_node++){
+
+		coords_value = coords[(*it_node).label];
+		ep = findInterval(epochs, coords_value);
+
+		for(int i = 0; i < desc[(*(*it_node).child_left).label].member.size(); i++){
+			for(int j = 0; j < desc[(*(*it_node).child_right).label].member.size(); j++){
+				tmrcas[desc[(*(*it_node).child_left).label].member[i]][desc[(*(*it_node).child_right).label].member[j]][ep] += factor;
+				tmrcas[desc[(*(*it_node).child_right).label].member[j]][desc[(*(*it_node).child_left).label].member[i]][ep] += factor;
+			}
+		}
+	}
+
+}
+
 
 //' Function to calculate f2 statistics from Relate trees for pairs of populations specified in poplabels.
 //'
@@ -298,7 +335,7 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 	arma::cube f2_block = arma::zeros<arma::cube>(sample.groups.size()+1, sample.groups.size()+1, 1000);
 	std::vector<std::string> splicenames(1000);
 	int blockID = 0;
-	float f2, num_infSNPs = 0.0;
+	float num_infSNPs = 0.0;
 
 	bool blockBP = false;
 	std::ofstream os;
@@ -674,14 +711,13 @@ NumericVector f2_blocks_from_RelateAges( SEXP pref, SEXP file_mut, Nullable<doub
 	arma::mat num_infSNPs_ps = arma::zeros<arma::mat>(pops_.size(), pops_.size());
 	std::vector<std::string> splicenames(1000);
 	int blockID = 0, current_pos = 0;
-	float f2, num_infSNPs = 0.0, num_snps = 0, num_used_snps = 0;
+	float num_infSNPs = 0.0, num_snps = 0, num_used_snps = 0;
 
 	std::vector<int> sequence;
 	std::vector<double> freqs(pops_.size(), 0), num_inds(pops_.size(), 0);
 	std::string REF, ALT, chr, current_chr;
 	int bp, percentage = 0, snp = 0;
 	double rec, current_rec = 0;
-	double prop_excl = 0.0;
 	bool mut_exists = false, never_exists = false;
 	if(filename_mut == "") never_exists = true;
 
@@ -911,7 +947,6 @@ NumericVector f2_blocks_from_RelateAges( SEXP pref, SEXP file_mut, Nullable<doub
 
 					num_used_snps++;
 					std::vector<double>::iterator it_num = num_inds.begin();
-					int tmp = 0;
 					for(std::vector<double>::iterator it_freq = freqs.begin(); it_freq != freqs.end(); it_freq++){
 						if(*it_num > 0){
 							*it_freq /= *it_num;
@@ -919,7 +954,6 @@ NumericVector f2_blocks_from_RelateAges( SEXP pref, SEXP file_mut, Nullable<doub
 							assert(*it_freq <= 1.0);
 						}
 						it_num++;
-						tmp++;
 					}
 
 					if(correct){
@@ -952,9 +986,6 @@ NumericVector f2_blocks_from_RelateAges( SEXP pref, SEXP file_mut, Nullable<doub
 					num_infSNPs += overlap;
 				}
 
-			}else{
-				//std::cerr << chr << " " << bp << " " << REF << " " << ALT << std::endl;
-				prop_excl += 1.0;
 			}
 
 		}
@@ -1113,7 +1144,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 	if(N == sample.ind.size()){
 		is_haploid = true;
 	}else{
-    assert(sample.ind.size() == 2*N);
+		assert(sample.ind.size() == 2*N);
 	}
 
 	////////// 1. Read one tree at a time /////////
@@ -1270,7 +1301,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 					assert((current_igenpos+1)*binsize_ <= genpos);
 					for(double gbp = (current_igenpos + 1.0)*binsize_; gbp <= genpos; gbp += binsize_){
 						if(recmap.gen_pos[irec] >= gbp){
-              assert(recmap.gen_pos[irec-1] <= gbp);
+							assert(recmap.gen_pos[irec-1] <= gbp);
 							if(irec > 0){
 								pos.push_back((int)(((double)gbp - recmap.gen_pos[irec-1])/(recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) * (recmap.bp[irec] - recmap.bp[irec-1]) + recmap.bp[irec-1]));
 							}else{
@@ -1288,7 +1319,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 								pos.push_back((int)(recmap.bp[irec]/recmap.gen_pos[irec] * (gbp - recmap.gen_pos[irec]) + recmap.bp[irec]));
 							}else{
 								assert(recmap.gen_pos[irec] >= gbp);
-                assert(recmap.gen_pos[irec-1] <= gbp);
+								assert(recmap.gen_pos[irec-1] <= gbp);
 								assert(irec > 0);
 								pos.push_back((int)(((double)gbp - recmap.gen_pos[irec-1])/(recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) * (recmap.bp[irec] - recmap.bp[irec-1]) + ((double)recmap.bp[irec-1]) ));
 							}
@@ -1338,17 +1369,17 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 							if(group_used[ sample.group_of_haplotype[desc[sib].member[k]] ] != 0) nonself++;
 						}
 						/*
-						if(pos[0] == 509747 && i == 0){
-							std::cerr << i << " " << nonself << " " << desc[sib].member.size() << std::endl;
-							for(int k = 0; k < group_used.size(); k++){
-							  std::cerr << group_used[k] << " ";
-							}
-							std::cerr << std::endl;
-							for(int k = 0; k < desc[sib].member.size(); k++){
-								std::cerr << desc[sib].member[k] << " of group " << sample.group_of_haplotype[desc[sib].member[k]] << std::endl;
-							}
-						}
-						*/
+							 if(pos[0] == 509747 && i == 0){
+							 std::cerr << i << " " << nonself << " " << desc[sib].member.size() << std::endl;
+							 for(int k = 0; k < group_used.size(); k++){
+							 std::cerr << group_used[k] << " ";
+							 }
+							 std::cerr << std::endl;
+							 for(int k = 0; k < desc[sib].member.size(); k++){
+							 std::cerr << desc[sib].member[k] << " of group " << sample.group_of_haplotype[desc[sib].member[k]] << std::endl;
+							 }
+							 }
+							 */
 						//draw a random number between 0 and nonself
 						int copyind = (int)nonself*runif(rng);
 
@@ -1388,7 +1419,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 		//output to file
 		std::ofstream os(filename_paintout[chr]);
 		os << "EM_iter = 0 (N_e = 0 / copy_prop = 0 / mutation = 0 / mutationGLOBAL = 0), nsamples = 1, N_e_start = 400000.000000 (divided by number of donor haplotypes), region_size = 100.000000\n";
-		
+
 		if(is_haploid){
 			for(int i = 0; i < sample.ind.size(); i++){
 				os << "HAP 1 " << sample.ind[i] << "\n";
@@ -1631,7 +1662,7 @@ NumericVector ExpPaintingProfile( SEXP file_anc, SEXP file_mut, SEXP poplabels, 
 }
 
 
-//' Function to calculate TMRCAs from Relate trees for pairs of populations specified in poplabels.
+//' Function to calculates mean TMRCAs from Relate trees for pairs of populations specified in poplabels.
 //'
 //' This function will calculate TMRCAs in blocks of prespecified size for all pairs of populations specified in the poplabels file.
 //' Please refer to the Relate documentation for input file formats (https://myersgroup.github.io/relate/).
@@ -1712,11 +1743,11 @@ void TMRCA_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_
 
 	////////// 1. Read one tree at a time /////////
 
-  //as output I want a data frame with columns blockID, chr, start, end, ind1, ind2, pop1, pop2, f2
-  
+	//as output I want a data frame with columns blockID, chr, start, end, ind1, ind2, pop1, pop2, f2
+
 	std::vector<float> numsnps(1000), chrom(1000), blockBP(1000);
 	arma::cube f2_block = arma::zeros<arma::cube>(sample.group_of_haplotype.size(), sample.group_of_haplotype.size(), 1000);
-	
+
 	int blockID = 0;
 	float num_infSNPs = 0.0;
 	for(int chr = 0; chr < filename_anc.size(); chr++){
@@ -1858,7 +1889,7 @@ void TMRCA_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_
 	os << "blockID\tCHR\tBP\tHAPID1\tHAPID2\tIND1\tIND2\tPOP1\tPOP2\tTMRCA\n";
 
 	//blockID chr bp ind1 ind2 pop1 pop2 TMRCA
-  for(int b = 0; b < blockID; b++){
+	for(int b = 0; b < blockID; b++){
 		int k = 0;
 		for(arma::cube::slice_iterator it_c = f2_block.begin_slice(b); it_c != f2_block.end_slice(b); it_c++){
 
@@ -1872,7 +1903,267 @@ void TMRCA_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_
 		}
 	}
 
-  os.close();
+	os.close();
+
+	std::cerr << "Block: " << blockID << ", " << "[100%]\r";
+	std::cerr << std::endl;
+
+}
+
+
+//' Function to calculates TMRCA distributions from Relate trees for pairs of populations specified in poplabels.
+//'
+//' This function will calculate TMRCAs in blocks of prespecified size for all pairs of populations specified in the poplabels file.
+//' Please refer to the Relate documentation for input file formats (https://myersgroup.github.io/relate/).
+//'
+//' @param file_anc Filename of anc file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+//' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+//' @param file_out Filename of output file.
+//' @param poplabels Filename of poplabels file
+//' @param epochs Vector of epoch boundaries. Should start at 0.
+//' @param chrs (Optional) Vector of chromosome IDs
+//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
+//' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
+//' @return 3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.
+//' @examples
+//' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
+//' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
+//' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
+//' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+//'
+//' #Calculate f2s between all pairs of populations
+//' TMRCA_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map)
+//' @export
+// [[Rcpp::export]]
+void TMRCAdist_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_out, NumericVector epochs, SEXP file_map = R_NilValue, Nullable<CharacterVector> chrs = R_NilValue, Nullable<double> t = R_NilValue, Nullable<double> blgsize = R_NilValue) {
+
+	std::string filename_poplabels = as<std::string>(poplabels);
+	std::vector<std::string> filename_anc, filename_mut, filename_rec;
+	std::string map_ = "";
+	if(file_map != R_NilValue){
+		map_ = as<std::string>(file_map);
+	}
+
+	std::vector<float> epochs_ = as<std::vector<float> >(epochs);
+
+	double t_ = std::numeric_limits<double>::infinity();
+	if(t.isNotNull()){
+		t_ = as<double>(t);
+	}
+
+	CharacterVector chrs_;
+	if(chrs.isNotNull()){
+		chrs_ = chrs;
+		for(int i = 0; i < chrs_.size(); i++){
+			filename_anc.push_back( as<std::string>(file_anc) + "_chr" + as<std::string>(chrs_[i]) + ".anc" );
+			filename_mut.push_back( as<std::string>(file_mut) + "_chr" + as<std::string>(chrs_[i]) + ".mut" );
+			filename_rec.push_back( map_ + "_chr" + as<std::string>(chrs_[i]) + ".txt" );
+		}
+	}else{
+		chrs_ = CharacterVector::create("1");
+		filename_anc.push_back( as<std::string>(file_anc) );
+		filename_mut.push_back( as<std::string>(file_mut) );
+		filename_rec.push_back( map_ );
+	}
+
+	double binsize_ = 0.05;
+	if(blgsize.isNotNull()){
+		binsize_ = as<double>(blgsize);
+	}
+
+	bool isM = true;
+	if(binsize_ > 100) isM = false;
+	if(isM){
+		if(map_ == ""){
+			Rcpp::stop("Need to specify recombination map when blgsize < 100");
+		}
+	}
+
+	Sample sample;
+	sample.Read(filename_poplabels);
+
+	std::cerr << "Computing pairwise f2 for " << sample.groups.size() + 1 << " groups." << std::endl;
+	std::cerr << "blgsize: " << binsize_;
+	if(isM) std::cerr << "M" << std::endl;
+	if(!isM) std::cerr << "bp" << std::endl;
+	std::cerr << std::endl;
+
+	MarginalTree mtr; //stores marginal trees. mtr.pos is SNP position at which tree starts, mtr.tree stores the tree
+	Muts::iterator it_mut; //iterator for mut file
+	float num_bases_tree_persists = 0.0;
+
+	////////// 1. Read one tree at a time /////////
+
+	//as output I want a data frame with columns blockID, chr, start, end, ind1, ind2, pop1, pop2, f2
+
+	//std::vector<float> numsnps(1000), chrom(1000), blockBP(1000);
+	double numsnps, chrom, blockBP;
+	int N = sample.group_of_haplotype.size();
+	std::vector<std::vector<std::vector<float>>> tmrcas(N);
+	for(int i = 0; i < tmrcas.size(); i++){
+		tmrcas[i].resize(N);
+		for(int j = 0; j < N; j++){
+      tmrcas[i][j].resize(epochs_.size());
+			std::fill(tmrcas[i][j].begin(), tmrcas[i][j].end(), 0.0);
+		}
+	}
+
+	//output
+	std::ofstream os(as<std::string>(file_out) + ".tmrca");
+
+	os << "blockID\tCHR\tBP\tHAPID1\tHAPID2\tIND1\tIND2\tPOP1\tPOP2\t";
+	for(int e = 0; e < epochs_.size(); e++){
+		os << epochs_[e] << "\t";
+	}
+	os << "\n";
+
+
+	int blockID = 0;
+	float num_infSNPs = 0.0;
+	for(int chr = 0; chr < filename_anc.size(); chr++){
+
+		//We open anc file and read one tree at a time. File remains open until all trees have been read OR ancmut.CloseFiles() is called.
+		//The mut file is read once, file is closed after constructor is called.
+		AncMutIterators ancmut(filename_anc[chr], filename_mut[chr]);
+		Data data(ancmut.NumTips(), ancmut.NumSnps());
+
+		map recmap(filename_rec[chr].c_str());
+		int irec = 0;
+
+		//mtr stores the marginal tree, it_mut points to the first SNP at which the marginal tree starts.
+		//If marginal tree has no SNPs mapping to it, it_mut points to the first SNP of the following tree that has a SNP mapping to it
+		num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
+
+		std::vector<float> freqs(2, 0.0), coords(2*data.N-1, 0.0);
+		std::vector<Leaves> desc;
+		int current_pos = 0;
+		double current_rec = 0;
+		double rec;
+		double factor = 0.0;
+		int percentage = 0;
+		//iterate through whole file
+		std::cerr << "Block: " << blockID << "\r";
+		while(num_bases_tree_persists >= 0.0){
+
+			mtr.tree.GetCoordinates(coords);
+			mtr.tree.FindAllLeaves(desc);
+
+			if(((*it_mut).tree % (int)(ancmut.NumTrees()/100)) == 0){
+				std::cerr << "Block: " << blockID << ", " << "[" << percentage << "%]\r";
+				Rcpp::checkUserInterrupt();
+				percentage++;
+				std::cerr.flush();
+			}
+
+			//compute genetic distance at the start of this tree
+			if(isM){
+				if(recmap.bp[irec] >= (*it_mut).pos){
+					if(irec > 0){
+						rec = ((double)(*it_mut).pos - recmap.bp[irec-1])/(recmap.bp[irec] - recmap.bp[irec-1]) * (recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) + recmap.gen_pos[irec-1];
+					}else{
+						rec = ((double)(*it_mut).pos)/(recmap.bp[irec]) * (recmap.gen_pos[irec]);         
+					}
+				}else{
+					while( recmap.bp[irec] < (*it_mut).pos ){
+						irec++;
+						if(irec == recmap.bp.size()){
+							irec--;
+							break;
+						}
+					}
+					if(irec == recmap.bp.size()-1){
+						rec = recmap.gen_pos[irec]/recmap.bp[irec] * ((*it_mut).pos - recmap.bp[irec]) + recmap.gen_pos[irec];
+					}else{
+						assert(recmap.bp[irec] >= (*it_mut).pos);
+						assert(irec > 0);
+						rec = ((double)(*it_mut).pos - recmap.bp[irec-1])/(recmap.bp[irec] - recmap.bp[irec-1]) * (recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) + recmap.gen_pos[irec-1];
+					}
+				}
+				assert(rec >= 0.0);
+			}
+
+			//for each tree, calculate f2 stats given sample assignment to pops
+			if( (!isM && (*it_mut).pos - current_pos > binsize_) || (isM && rec/100.0 - current_rec > binsize_) ){
+
+				Rcpp::checkUserInterrupt();
+				if((int)std::round(num_infSNPs) > 0){
+					numsnps = std::round(num_infSNPs);
+					chrom = chr;
+					blockBP = current_pos;
+					num_infSNPs = 0;
+					factor = 0.0;
+					for(int i = 0; i < N; i++){
+						for(int j = 0; j < N; j++){
+							os << blockID << "\t" << chrs_[chrom] << "\t" << blockBP << "\t" << i << "\t" << j << "\t" << sample.ind[(int) (i/2.0)] << "\t" << sample.ind[(int) (j/2.0)] << "\t" <<	sample.groups[sample.group_of_haplotype[i]] << "\t" << sample.groups[sample.group_of_haplotype[j]] << "\t";
+							for(int e = 0; e < epochs_.size(); e++){
+							  os << tmrcas[i][j][e] << "\t";
+							}
+							os << "\n";
+						}
+					}
+
+					for(int i = 0; i < tmrcas.size(); i++){
+						for(int j = 0; j < N; j++){
+							std::fill(tmrcas[i][j].begin(), tmrcas[i][j].end(), 0.0);
+						}
+					}
+
+					blockID++;
+				}
+
+				if(isM){
+					while(rec/100.0 - current_rec > binsize_){
+						current_rec += binsize_; 
+					}
+					current_pos = (*it_mut).pos;
+				}else{
+					while((*it_mut).pos - current_pos > binsize_){
+						current_pos += binsize_; 
+					}
+				}
+
+			}
+
+			//now populate values for this tree
+			factor += num_bases_tree_persists;
+			int tree = (*it_mut).tree;
+			while((*it_mut).tree == tree){
+				num_infSNPs++;
+				it_mut++;
+			}
+			traverseTMRCAdist(mtr, desc, tmrcas, epochs_, num_bases_tree_persists, coords);
+
+			num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
+		}
+
+		if((int)std::round(num_infSNPs) > 0){
+			numsnps = std::round(num_infSNPs);
+			chrom = chr;
+			blockBP = current_pos;
+			num_infSNPs = 0;
+
+			for(int i = 0; i < N; i++){
+				for(int j = 0; j < N; j++){
+					os << blockID << "\t" << chrs_[chrom] << "\t" << blockBP << "\t" << i << "\t" << j << "\t" << sample.ind[(int) (i/2.0)] << "\t" << sample.ind[(int) (j/2.0)] << "\t" <<	sample.groups[sample.group_of_haplotype[i]] << "\t" << sample.groups[sample.group_of_haplotype[j]] << "\t";
+					for(int e = 0; e < epochs_.size(); e++){
+						os << tmrcas[i][j][e] << "\t";
+					}
+					os << "\n";
+				}
+			}
+
+			for(int i = 0; i < tmrcas.size(); i++){
+				for(int j = 0; j < N; j++){
+					std::fill(tmrcas[i][j].begin(), tmrcas[i][j].end(), 0.0);
+				}
+			}
+
+			blockID++;
+		}
+
+	}
+
+	os.close();
 
 	std::cerr << "Block: " << blockID << ", " << "[100%]\r";
 	std::cerr << std::endl;
