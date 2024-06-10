@@ -139,7 +139,7 @@ ExpPaintingProfile <- function(file_anc, file_mut, poplabels, pops = NULL, chrs 
     .Call(`_twigstats_ExpPaintingProfile`, file_anc, file_mut, poplabels, pops, chrs)
 }
 
-#' Function to calculate TMRCAs from Relate trees for pairs of populations specified in poplabels.
+#' Function to calculates mean TMRCAs from Relate trees for pairs of populations specified in poplabels.
 #'
 #' This function will calculate TMRCAs in blocks of prespecified size for all pairs of populations specified in the poplabels file.
 #' Please refer to the Relate documentation for input file formats (https://myersgroup.github.io/relate/).
@@ -166,7 +166,7 @@ TMRCA_from_Relate <- function(file_anc, file_mut, poplabels, file_out, file_map 
     invisible(.Call(`_twigstats_TMRCA_from_Relate`, file_anc, file_mut, poplabels, file_out, file_map, chrs, t, blgsize))
 }
 
-#' Function to calculate TMRCAs from Relate trees for pairs of populations specified in poplabels.
+#' Function to calculates TMRCA distributions from Relate trees for pairs of populations specified in poplabels.
 #'
 #' This function will calculate TMRCAs in blocks of prespecified size for all pairs of populations specified in the poplabels file.
 #' Please refer to the Relate documentation for input file formats (https://myersgroup.github.io/relate/).
@@ -175,7 +175,7 @@ TMRCA_from_Relate <- function(file_anc, file_mut, poplabels, file_out, file_map 
 #' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
 #' @param file_out Filename of output file.
 #' @param poplabels Filename of poplabels file
-#' @param t (Optional) Time cutoff in generations. Any coalescences older that t will be set to t in the analysis. Default: t = Inf.
+#' @param epochs Vector of epoch boundaries. Should start at 0.
 #' @param chrs (Optional) Vector of chromosome IDs
 #' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
 #' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100

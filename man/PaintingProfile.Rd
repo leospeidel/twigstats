@@ -4,7 +4,13 @@
 \alias{PaintingProfile}
 \title{Function to compute genome-wide copying proportions.}
 \usage{
-PaintingProfile(filename_painting, filename_idfile, nboot, blocksize)
+PaintingProfile(
+  filename_painting,
+  filename_idfile,
+  nboot,
+  blocksize,
+  use_IDs = FALSE
+)
 }
 \arguments{
 \item{filename_painting}{Vector containing filenames of painting profiles. Output of Painting.}
@@ -14,6 +20,8 @@ PaintingProfile(filename_painting, filename_idfile, nboot, blocksize)
 \item{nboot}{Number of bootstrap samples.}
 
 \item{blocksize}{Number of blocks to combine for the bootstrap. E.g. if Painting was run with a blgsize of 1e-5 Morgans, blocksize should be 5000 to achieve a blocksize of 5cM.}
+
+\item{use_IDs}{If TRUE, compute profile for each sample. If FALSE (default), compute profile for each group as specified in the second column of the idfile.}
 }
 \value{
 Returns a data frame with copying proportions per bootstrap sample.
