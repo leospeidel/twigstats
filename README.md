@@ -1,8 +1,8 @@
 # twigstats
 
 Boost f-statitics power using genealogies. Compatible with [admixtools2](https://uqrmaie1.github.io/admixtools/index.html).<br/>
-Full documentation at [leospeidel.com/twigstats](https://leospeidel.com/twigstats).<br/>
-Each function is described on this page: [leospeidel.com/twigstats/reference](https://leospeidel.com/twigstats/reference).
+Full documentation at [leospeidel.github.io/twigstats](https://leospeidel.github.io/twigstats).<br/>
+Each function is described on this page: [leospeidel.github.io/twigstats/reference](https://leospeidel.github.io/twigstats/reference).
 
 ## Installation
 
@@ -28,5 +28,5 @@ Now, all required R packages will be installed into this fresh R library.
 
 ## Basic Usage
 
-Please see [leospeidel.com/twigstats/articles/basic-usage.html](https://leospeidel.com/twigstats/articles/basic-usage.html).<br/>
-For a small real data example see [leospeidel.com/twigstats/articles/real-data-example.html](https://leospeidel.com/twigstats/articles/real-data-example.html).
+Please see [leospeidel.github.io/twigstats/articles/basic-usage.html](https://leospeidel.github.io/twigstats/articles/basic-usage.html).<br/>
+For a small real data example see [leospeidel.github.io/twigstats/articles/real-data-example.html](https://leospeidel.github.io/twigstats/articles/real-data-example.html).
