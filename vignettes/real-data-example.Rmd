@@ -24,6 +24,12 @@ pre[class] {
 }
 ```
 
+The overall process should be <b>very straight forward</b>: 
+
+1. We first run Relate starting from a phased VCF file
+2. Then we run Twigstats on these inferred trees, using a single R function called ```f2_blocks_from_Relate```. 
+3. This object is then fed into admixtools2 to compute <b>any</b> f-statistic.
+
 We will illustrate how to run Twigstats on a small example of imputed ancient genomes.
 We will use chromosome 1 of 25 publicly available low coverage shotgun genomes from Anglo-Saxon contexts, British Iron/Roman Age, Irish Bronze Age, and the Scandinavian Early Iron Age (Cassidy et al, PNAS 2016; Martiniano et al, Nature Communications 2016; Anastasiadou et al, Communications Biology 2023; Schiffels et al Nature Communications 2016; Gretzinger et al Nature 2022; Rodriguez-Varela et al Cell 2023). 
 
@@ -31,8 +37,6 @@ To look up where preprepared input files are stored on your computer, please exe
 ```
 print(system.file("example/", package = "twigstats"))
 ```
-
-The overall process should be very straight forward: We first run Relate starting from a phased VCF file, and then run Twigstats on these inferred trees, using a single R function called ```f2_blocks_from_Relate```. This object is then fed into admixtools2 to compute <b>any</b> f-statistic.
 
 In this example, we have already executed the steps detailed under "Preparing the data", so you can skip ahead to "Running Relate".
 
@@ -170,16 +174,16 @@ The standard errors are much reduced and we get a meaningful <b>admixture propor
 
 ## Multiple chromosomes
 
-If you have multiple chromosomes, you can use the argument ```chr``` in Twigstats functions, which takes an R array with chromosome names as input. For ```file_anc```, ```file_mut```, and ```file_map```, you will only need to specify the filename prefix, such that e.g., the anc files are named ```{r, eval=FALSE} paste0(file_anc,"_chr1.anc.gz")``` etc.
+If you have multiple chromosomes, you can use the argument ```chr``` in Twigstats functions, which takes an R array with chromosome names as input. For ```file_anc```, ```file_mut```, and ```file_map```, you will only need to specify the filename prefix, such that e.g., the anc files are named ```paste0(file_anc,"_chr1.anc.gz")``` etc.
 
 E.g., the above Twigstats runs are equivalent to
 ```{r}
-file_anc  <- "1000G_aDNA_mask_transv"
-file_mut  <- "1000G_aDNA_mask_transv"
+file_anc  <- "1000G_aDNA_mask_transv" #filename prefix only
+file_mut  <- "1000G_aDNA_mask_transv" #filename prefix only
 
 path      <- paste0(system.file("example/", package = "twigstats"),"/") #just necessary to get the path to the poplabels file
 poplabels <- paste0(path,"1000GP_Phase3_sub_aDNA.poplabels")
-file_map  <- paste0(path,"genetic_map_combined_b37")
+file_map  <- paste0(path,"genetic_map_combined_b37") #filename prefix only
 chrs <- 1:1
 
 #Calculate f2s between all pairs of populations

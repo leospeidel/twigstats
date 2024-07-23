@@ -115,6 +115,16 @@ export R_LIBS_USER="~/R_libs_for_twigstats/"</code></pre>
 </h2>
 <p>Please see <a href="https://leospeidel.github.io/twigstats/articles/basic-usage.html">leospeidel.github.io/twigstats/articles/basic-usage.html</a>.<br> For a small real data example see <a href="https://leospeidel.github.io/twigstats/articles/real-data-example.html">leospeidel.github.io/twigstats/articles/real-data-example.html</a>.</p>
 </div>
+<div class="section level2">
+<h2 id="simulations">Simulations<a class="anchor" aria-label="anchor" href="#simulations"></a>
+</h2>
+<center>
+<img src="reference/figures/plot_doc.png" id="id" class="class" width="600" height="300">
+</center>
+<p>We simulate five populations named PI, PO, P1, P2, and PX, as described in our paper (Speidel et al, 2024). In this simulation PX is admixed between P1 and P2 50 generations ago and these source groups split 250 generations ago.</p>
+<p>The proportion is constrained by a ratio of two f4-statistics f4(PO, PI, PX, P1)/f4(PO, PI, P2, P1). We compute these f-statistics on the genotypes, as conventional, and using Twigstats choosing a cutoff time of 500 generations. We additional compare against a version where we compute f-statistics on variants ascertained using a rare-variant cutoff of 5% MAF, and we compare against an idealised ‘chromosome painting’ approach.</p>
+<p>We find that admixture proportions are inferred accurately and without bias using Twigstats.</p>
+</div>
 </div>
   </div>
 
