@@ -153,6 +153,7 @@ ExpPaintingProfile <- function(file_anc, file_mut, poplabels, pops = NULL, chrs 
 #' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
 #' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
 #' @return 3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.
+#' @keywords internal
 #' @examples
 #' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 #' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
@@ -180,6 +181,7 @@ TMRCA_from_Relate <- function(file_anc, file_mut, poplabels, file_out, file_map 
 #' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
 #' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
 #' @return 3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.
+#' @keywords internal
 #' @examples
 #' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 #' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
@@ -187,7 +189,7 @@ TMRCA_from_Relate <- function(file_anc, file_mut, poplabels, file_out, file_map 
 #' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
 #'
 #' #Calculate f2s between all pairs of populations
-#' TMRCA_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map)
+#' TMRCAdist_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map, epochs = c(0,10^seq(3,7,length.out=49)/28))
 #' @export
 TMRCAdist_from_Relate <- function(file_anc, file_mut, poplabels, file_out, epochs, file_map = NULL, chrs = NULL, t = NULL, blgsize = NULL) {
     invisible(.Call(`_twigstats_TMRCAdist_from_Relate`, file_anc, file_mut, poplabels, file_out, epochs, file_map, chrs, t, blgsize))

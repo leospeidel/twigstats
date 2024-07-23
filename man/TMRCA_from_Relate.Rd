@@ -48,3 +48,4 @@ file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twi
 #Calculate f2s between all pairs of populations
 TMRCA_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map)
 }
+\keyword{internal}

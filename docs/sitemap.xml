@@ -1,57 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://leospeidel.com/twigstats/404.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/404.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/LICENSE.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/LICENSE.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/articles/basic-usage.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/articles/basic-usage.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/articles/index.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/articles/index.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/articles/real-data-example.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/articles/real-data-example.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/authors.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/authors.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/index.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/index.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/reference/ExpPaintingProfile.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/reference/ExpPaintingProfile.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/reference/Painting.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/reference/Painting.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/reference/PaintingNNLS.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/reference/PaintingNNLS.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/reference/PaintingProfile.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/reference/PaintingProfile.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/reference/f-statistics.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/reference/TMRCA_from_Relate.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/reference/f2_blocks_from_Relate.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/reference/TMRCAdist_from_Relate.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/reference/f2_blocks_from_RelateAges.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/reference/f-statistics.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/reference/f4_ratio.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/reference/f2_blocks_from_Relate.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/reference/index.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/reference/f2_blocks_from_RelateAges.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/reference/jackknife.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/reference/f4_ratio.html</loc>
   </url>
   <url>
-    <loc>https://leospeidel.com/twigstats/reference/theoretical_zscore.html</loc>
+    <loc>https://leospeidel.github.io/twigstats/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>https://leospeidel.github.io/twigstats/reference/jackknife.html</loc>
+  </url>
+  <url>
+    <loc>https://leospeidel.github.io/twigstats/reference/theoretical_zscore.html</loc>
   </url>
 </urlset>

@@ -47,5 +47,6 @@ poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "tw
 file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
 
 #Calculate f2s between all pairs of populations
-TMRCA_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map)
+TMRCAdist_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map, epochs = c(0,10^seq(3,7,length.out=49)/28))
 }
+\keyword{internal}

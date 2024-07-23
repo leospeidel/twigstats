@@ -1144,7 +1144,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 	if(N == sample.ind.size()){
 		is_haploid = true;
 	}else{
-		assert(sample.ind.size() == 2*N);
+		assert(2*sample.ind.size() == N);
 	}
 
 	////////// 1. Read one tree at a time /////////
@@ -1676,6 +1676,7 @@ NumericVector ExpPaintingProfile( SEXP file_anc, SEXP file_mut, SEXP poplabels, 
 //' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
 //' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
 //' @return 3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.
+//' @keywords internal
 //' @examples
 //' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 //' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
@@ -1925,6 +1926,7 @@ void TMRCA_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_
 //' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
 //' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
 //' @return 3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.
+//' @keywords internal
 //' @examples
 //' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 //' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
@@ -1932,7 +1934,7 @@ void TMRCA_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_
 //' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
 //'
 //' #Calculate f2s between all pairs of populations
-//' TMRCA_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map)
+//' TMRCAdist_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map, epochs = c(0,10^seq(3,7,length.out=49)/28))
 //' @export
 // [[Rcpp::export]]
 void TMRCAdist_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_out, NumericVector epochs, SEXP file_map = R_NilValue, Nullable<CharacterVector> chrs = R_NilValue, Nullable<double> t = R_NilValue, Nullable<double> blgsize = R_NilValue) {
