@@ -4,8 +4,5 @@ bibentry(
   author   = "Leo Speidel, Marina Silva, Thomas Booth, Ben Raffield, Kyriaki Anastasiadou, Christopher Barrington, Anders Götherström, Peter Heather, Pontus Skoglund",
   journal  = "bioRxiv",
   year     = "2024",
-  volume   = ,
-  number   = ,
-  pages    = ,
   doi      = "https://doi.org/10.1101/2024.03.15.585102"
 )
