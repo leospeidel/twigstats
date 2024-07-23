@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
@@ -122,6 +122,11 @@ al Cell 2023).</p>
 <p>To look up where preprepared input files are stored on your computer,
 please execute the following command once Twigstats is installed:</p>
 <pre><code><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"example/"</span>, package <span class="op">=</span> <span class="st">"twigstats"</span><span class="op">)</span><span class="op">)</span></span></code></pre>
+<p>The overall process should be very straight forward: We first run
+Relate starting from a phased VCF file, and then run Twigstats on these
+inferred trees, using a single R function called
+<code>f2_blocks_from_Relate</code>. This object is then fed into
+admixtools2 to compute <b>any</b> f-statistic.</p>
 <p>In this example, we have already executed the steps detailed under
 “Preparing the data”, so you can skip ahead to “Running Relate”.</p>
 <div class="section level2">
@@ -195,30 +200,42 @@ score</a>).</p>
 &lt;80% is achieved by running something like the following command</p>
 <pre><code>bcftools view --max-alleles 2 --exclude-types indels 1000G_aDNA_chr1.vcf.gz | 
 bcftools +setGT -- -t q -n . -i'SMPL_MAX(FORMAT/GP)&lt;=0.8' | 
-bcftools view -i 'F_MISSING==0.0' -O z -o 1000G_aDNA_nomiss_chr1.vcf.gz</code></pre>
-<p>This usually works well with a small number of samples. For larger
-data sets, this is likely too restrictive. Please note that Relate
-cannot accept missing data as input, so if you would like to e.g. retain
-only sites where &lt;2% of genotypes have a posterior &lt;80%, then you
-will need to first generate a list of BP positions of SNPs to keep, and
-then subset the original imputed vcf using bcftools. Such a list can be
-generated e.g. by</p>
+bcftools view -i 'F_MISSING==0.0' -O z -o 1000G_aDNA_filtered_chr1.vcf.gz</code></pre>
+<p>This usually works well with a small number of samples.</p>
+<p><b>For larger data sets</b>, this is likely too restrictive. Please
+note that Relate cannot accept missing data as input, so if you would
+like to e.g. retain only sites where &lt;2% of genotypes have a
+posterior &lt;80%, then you will need to first generate a list of BP
+positions of SNPs to keep:</p>
 <pre><code>bcftools view --max-alleles 2 --exclude-types indels 1000G_aDNA_chr1.vcf.gz | 
 bcftools +setGT -- -t q -n . -i'SMPL_MAX(FORMAT/GP)&lt;=0.8' | 
 bcftools view -i 'F_MISSING&lt;=0.02' | 
-bcftools query -f "%CHROM %BP\n" &gt; BP_chr1.txt</code></pre>
-<p>We could alternatively use bcftools to annotate each SNP with an INFO
-score (see <a href="https://samtools.github.io/bcftools/howtos/plugins.html" class="external-link">impute-info</a>
+bcftools query -f "%CHROM\t%POS\n" &gt; BP_chr1.txt</code></pre>
+<p>We can then subset the original imputed vcf using bcftools:</p>
+<pre><code>bcftools view -R BP_chr1.txt 1000G_aDNA_chr1.vcf.gz -O z -o 1000G_aDNA_filtered_chr1.vcf.gz</code></pre>
+<p>Other filtering approaches are also possible, e.g., we can use
+bcftools to annotate each SNP with an INFO score (see <a href="https://samtools.github.io/bcftools/howtos/plugins.html" class="external-link">impute-info</a>
 plugin of bcftools) and require a minimum INFO score for each SNP. This
 score measures how well a SNP is imputed using surrounding haplotype
 information.</p>
+</div>
+<div class="section level4">
+<h4 id="genome-mask-and-ancestral-genome">Genome mask and ancestral genome<a class="anchor" aria-label="anchor" href="#genome-mask-and-ancestral-genome"></a>
+</h4>
+<p>You can download the 1000 Genomes Project accessibility masks from
+this URL for <a href="https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/supporting/accessible_genome_masks/" class="external-link">hg37</a>
+and <a href="https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_genomes_project/working/20160622_genome_mask_GRCh38/" class="external-link">hg38</a>.</p>
+<p>The ancestral genome is available here for <a href="ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/supporting/ancestral_alignments/">hg37</a>
+and <a href="https://ftp.ensembl.org/pub/release-86/fasta/ancestral_alleles/" class="external-link">hg38</a>.</p>
+<p>These files, and a recombination map for hg37 and hg38, can also be
+downloaded from <a href="https://www.dropbox.com/scl/fi/ocvr7m00f4jhfcytew4fy/Relate_input_files.tar?rlkey=j1kuqbo2hgvgfwmudwao0v0wv&amp;dl=0" class="external-link">here</a>.</p>
 </div>
 <div class="section level4">
 <h4 id="subsetting-to-transversions-optional">Subsetting to transversions (optional)<a class="anchor" aria-label="anchor" href="#subsetting-to-transversions-optional"></a>
 </h4>
 <p>We may also opt to only analyse transversions, which we can extract
 using the following command</p>
-<pre><code>bcftools view -i 'TYPE="snp" &amp;&amp; ( (REF!="A" || ALT!="G") &amp;&amp; (REF!="G" || ALT!="A") &amp;&amp; (REF!="C" || ALT!="T") &amp;&amp; (REF!="T" || ALT!="C"))' 1000G_aDNA_nomiss_chr1.vcf.gz -O z -o 1000G_aDNA_transv_chr1.vcf.gz</code></pre>
+<pre><code>bcftools view -i 'TYPE="snp" &amp;&amp; ( (REF!="A" || ALT!="G") &amp;&amp; (REF!="G" || ALT!="A") &amp;&amp; (REF!="C" || ALT!="T") &amp;&amp; (REF!="T" || ALT!="C"))' 1000G_aDNA_filtered_chr1.vcf.gz -O z -o 1000G_aDNA_transv_chr1.vcf.gz</code></pre>
 </div>
 <div class="section level4">
 <h4 id="conversion-to-relate-input-format">Conversion to Relate input format<a class="anchor" aria-label="anchor" href="#conversion-to-relate-input-format"></a>
@@ -261,91 +278,89 @@ details on how to run Relate. Here, we will run Relate using a mutation
 rate of 4e-9, corresponding approximately to the average transversion
 mutation rate in humans, and we will use pre-inferred coalescence rates
 stored in <code>1000G_auto.coal</code>.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="va">path</span><span class="op">=</span><span class="st">"/opt/homebrew/lib/R/4.3/site-library/twigstats/example/"</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="ex">Relate</span> <span class="at">--mode</span> All <span class="dt">\</span></span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>    <span class="at">--haps</span> <span class="va">${path}</span>/1000G_aDNA_mask_transv_chr1.haps.gz <span class="dt">\</span></span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>    <span class="at">--sample</span> <span class="va">${path}</span>/1000G_aDNA_mask_transv_chr1.sample.gz <span class="dt">\</span></span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>    <span class="at">--dist</span> <span class="va">${path}</span>/1000G_aDNA_mask_transv_chr1.dist.gz <span class="dt">\</span></span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>    <span class="at">--map</span> <span class="va">${path}</span>/genetic_map_combined_b37_chr1.txt <span class="dt">\</span></span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>    <span class="at">-o</span> 1000G_aDNA_mask_transv_chr1 <span class="dt">\</span></span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>    <span class="at">-m</span> 4e-9 <span class="dt">\</span></span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>    <span class="at">--coal</span> <span class="va">${path}</span>/1000G_auto.coal <span class="dt">\</span></span>
-<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>    <span class="at">--sample_ages</span> <span class="va">${path}</span>/sample_ages.txt <span class="dt">\</span></span>
-<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>    <span class="at">--memory</span> 5 <span class="dt">\</span></span>
-<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>    <span class="at">--seed</span> 1</span>
-<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a></span>
-<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="fu">gzip</span> <span class="at">-f</span> 1000G_aDNA_mask_transv_chr1.anc</span>
-<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="fu">gzip</span> <span class="at">-f</span> 1000G_aDNA_mask_transv_chr1.mut</span>
-<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co">#&gt; *********************************************************</span></span>
-<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="co">#&gt; Relate</span></span>
-<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co">#&gt;  * Authors: Leo Speidel, Marie Forest, Sinan Shi, Simon Myers.</span></span>
-<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="co">#&gt;  * Doc:     https://myersgroup.github.io/relate</span></span>
-<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="co">#&gt; Using:</span></span>
-<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="co">#&gt;   /opt/homebrew/lib/R/4.3/site-library/twigstats/example//1000G_aDNA_mask_transv_chr1.haps.gz</span></span>
-<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="co">#&gt;   /opt/homebrew/lib/R/4.3/site-library/twigstats/example//1000G_aDNA_mask_transv_chr1.sample.gz</span></span>
-<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a><span class="co">#&gt;   /opt/homebrew/lib/R/4.3/site-library/twigstats/example//genetic_map_combined_b37_chr1.txt</span></span>
-<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a><span class="co">#&gt; with mu = 4e-09 and coal = /opt/homebrew/lib/R/4.3/site-library/twigstats/example//1000G_auto.coal.</span></span>
-<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a><span class="co">#&gt; Parsing data..</span></span>
-<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a><span class="co">#&gt; Warning: Will use min 0.00019GB of hard disc.</span></span>
-<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 5.212840s; Max Memory usage: 57Mb.</span></span>
-<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-39"><a href="#cb7-39" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-40"><a href="#cb7-40" tabindex="-1"></a><span class="co">#&gt; Read 90 haplotypes with 229231 SNPs per haplotype.</span></span>
-<span id="cb7-41"><a href="#cb7-41" tabindex="-1"></a><span class="co">#&gt; Expected minimum memory usage: 1.5Gb.</span></span>
-<span id="cb7-42"><a href="#cb7-42" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-43"><a href="#cb7-43" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-44"><a href="#cb7-44" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-45"><a href="#cb7-45" tabindex="-1"></a><span class="co">#&gt; Starting chunk 0 of 0.</span></span>
-<span id="cb7-46"><a href="#cb7-46" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-47"><a href="#cb7-47" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-48"><a href="#cb7-48" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-49"><a href="#cb7-49" tabindex="-1"></a><span class="co">#&gt; Painting sequences...</span></span>
-<span id="cb7-50"><a href="#cb7-50" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 6.716679s; Max Memory usage: 93Mb.</span></span>
-<span id="cb7-51"><a href="#cb7-51" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-52"><a href="#cb7-52" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-53"><a href="#cb7-53" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-54"><a href="#cb7-54" tabindex="-1"></a><span class="co">#&gt; Estimating topologies of AncesTrees in sections 0-0...</span></span>
-<span id="cb7-55"><a href="#cb7-55" tabindex="-1"></a><span class="co">#&gt; [0/0]</span></span>
-<span id="cb7-56"><a href="#cb7-56" tabindex="-1"></a><span class="ex">CPU</span> Time spent: 20.474734s<span class="kw">;</span> <span class="ex">Max</span> Memory usage: 1.5e+03Mb.</span>
-<span id="cb7-57"><a href="#cb7-57" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-58"><a href="#cb7-58" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-59"><a href="#cb7-59" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-60"><a href="#cb7-60" tabindex="-1"></a><span class="co">#&gt; Propagating mutations across AncesTrees...</span></span>
-<span id="cb7-61"><a href="#cb7-61" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 26.978777s; Max Memory usage: 1.5e+03Mb.</span></span>
-<span id="cb7-62"><a href="#cb7-62" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-63"><a href="#cb7-63" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-64"><a href="#cb7-64" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-65"><a href="#cb7-65" tabindex="-1"></a><span class="co">#&gt; Inferring branch lengths of AncesTrees in sections 0-0...</span></span>
-<span id="cb7-66"><a href="#cb7-66" tabindex="-1"></a><span class="co">#&gt; [0/0]</span></span>
-<span id="cb7-67"><a href="#cb7-67" tabindex="-1"></a><span class="ex">CPU</span> Time spent: 156.776092s<span class="kw">;</span> <span class="ex">Max</span> Memory usage: 1.5e+03Mb.</span>
-<span id="cb7-68"><a href="#cb7-68" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-69"><a href="#cb7-69" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-70"><a href="#cb7-70" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-71"><a href="#cb7-71" tabindex="-1"></a><span class="co">#&gt; Combining AncesTrees in Sections...</span></span>
-<span id="cb7-72"><a href="#cb7-72" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 160.431945s; Max Memory usage: 1.5e+03Mb.</span></span>
-<span id="cb7-73"><a href="#cb7-73" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-74"><a href="#cb7-74" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-75"><a href="#cb7-75" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-76"><a href="#cb7-76" tabindex="-1"></a><span class="co">#&gt; Finalizing...</span></span>
-<span id="cb7-77"><a href="#cb7-77" tabindex="-1"></a><span class="co">#&gt; Number of not mapping SNPs: 414</span></span>
-<span id="cb7-78"><a href="#cb7-78" tabindex="-1"></a><span class="co">#&gt; Number of flipped SNPs    : 77</span></span>
-<span id="cb7-79"><a href="#cb7-79" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 164.650103s; Max Memory usage: 1.5e+03Mb.</span></span>
-<span id="cb7-80"><a href="#cb7-80" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-81"><a href="#cb7-81" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-82"><a href="#cb7-82" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-83"><a href="#cb7-83" tabindex="-1"></a><span class="co">#&gt; Done.</span></span>
-<span id="cb7-84"><a href="#cb7-84" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
-<span id="cb7-85"><a href="#cb7-85" tabindex="-1"></a><span class="co">#&gt; *********************************************************</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="va">path</span><span class="op">=</span><span class="st">"/opt/homebrew/lib/R/4.3/site-library/twigstats/example/"</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="ex">Relate</span> <span class="at">--mode</span> All <span class="dt">\</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>    <span class="at">--haps</span> <span class="va">${path}</span>/1000G_aDNA_mask_transv_chr1.haps.gz <span class="dt">\</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>    <span class="at">--sample</span> <span class="va">${path}</span>/1000G_aDNA_mask_transv_chr1.sample.gz <span class="dt">\</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>    <span class="at">--dist</span> <span class="va">${path}</span>/1000G_aDNA_mask_transv_chr1.dist.gz <span class="dt">\</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>    <span class="at">--map</span> <span class="va">${path}</span>/genetic_map_combined_b37_chr1.txt <span class="dt">\</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>    <span class="at">-o</span> 1000G_aDNA_mask_transv_chr1 <span class="dt">\</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>    <span class="at">-m</span> 4e-9 <span class="dt">\</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>    <span class="at">--coal</span> <span class="va">${path}</span>/1000G_auto.coal <span class="dt">\</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>    <span class="at">--sample_ages</span> <span class="va">${path}</span>/sample_ages.txt <span class="dt">\</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>    <span class="at">--memory</span> 5 <span class="dt">\</span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>    <span class="at">--seed</span> 1</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="fu">gzip</span> <span class="at">-f</span> 1000G_aDNA_mask_transv_chr1.anc</span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a><span class="fu">gzip</span> <span class="at">-f</span> 1000G_aDNA_mask_transv_chr1.mut</span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a><span class="co">#&gt; *********************************************************</span></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt; Relate</span></span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a><span class="co">#&gt;  * Authors: Leo Speidel, Marie Forest, Sinan Shi, Simon Myers.</span></span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a><span class="co">#&gt;  * Doc:     https://myersgroup.github.io/relate</span></span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a><span class="co">#&gt; Using:</span></span>
+<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a><span class="co">#&gt;   /opt/homebrew/lib/R/4.3/site-library/twigstats/example//1000G_aDNA_mask_transv_chr1.haps.gz</span></span>
+<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a><span class="co">#&gt;   /opt/homebrew/lib/R/4.3/site-library/twigstats/example//1000G_aDNA_mask_transv_chr1.sample.gz</span></span>
+<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a><span class="co">#&gt;   /opt/homebrew/lib/R/4.3/site-library/twigstats/example//genetic_map_combined_b37_chr1.txt</span></span>
+<span id="cb8-30"><a href="#cb8-30" tabindex="-1"></a><span class="co">#&gt; with mu = 4e-09 and coal = /opt/homebrew/lib/R/4.3/site-library/twigstats/example//1000G_auto.coal.</span></span>
+<span id="cb8-31"><a href="#cb8-31" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-32"><a href="#cb8-32" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a><span class="co">#&gt; Parsing data..</span></span>
+<span id="cb8-35"><a href="#cb8-35" tabindex="-1"></a><span class="co">#&gt; Warning: Will use min 0.00019GB of hard disc.</span></span>
+<span id="cb8-36"><a href="#cb8-36" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 2.135969s; Max Memory usage: 55Mb.</span></span>
+<span id="cb8-37"><a href="#cb8-37" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-38"><a href="#cb8-38" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-39"><a href="#cb8-39" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-40"><a href="#cb8-40" tabindex="-1"></a><span class="co">#&gt; Read 90 haplotypes with 229231 SNPs per haplotype.</span></span>
+<span id="cb8-41"><a href="#cb8-41" tabindex="-1"></a><span class="co">#&gt; Expected minimum memory usage: 1.5Gb.</span></span>
+<span id="cb8-42"><a href="#cb8-42" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-43"><a href="#cb8-43" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-44"><a href="#cb8-44" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-45"><a href="#cb8-45" tabindex="-1"></a><span class="co">#&gt; Starting chunk 0 of 0.</span></span>
+<span id="cb8-46"><a href="#cb8-46" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-47"><a href="#cb8-47" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-48"><a href="#cb8-48" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-49"><a href="#cb8-49" tabindex="-1"></a><span class="co">#&gt; Painting sequences...</span></span>
+<span id="cb8-50"><a href="#cb8-50" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 2.964603s; Max Memory usage: 1.2e+02Mb.</span></span>
+<span id="cb8-51"><a href="#cb8-51" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-52"><a href="#cb8-52" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-53"><a href="#cb8-53" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-54"><a href="#cb8-54" tabindex="-1"></a><span class="co">#&gt; Estimating topologies of AncesTrees in sections 0-0...</span></span>
+<span id="cb8-55"><a href="#cb8-55" tabindex="-1"></a><span class="co">#&gt; [0/0]CPU Time spent: 11.233155s; Max Memory usage: 2.2e+03Mb.</span></span>
+<span id="cb8-56"><a href="#cb8-56" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-57"><a href="#cb8-57" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-58"><a href="#cb8-58" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-59"><a href="#cb8-59" tabindex="-1"></a><span class="co">#&gt; Propagating mutations across AncesTrees...</span></span>
+<span id="cb8-60"><a href="#cb8-60" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 13.849157s; Max Memory usage: 2.2e+03Mb.</span></span>
+<span id="cb8-61"><a href="#cb8-61" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-62"><a href="#cb8-62" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-63"><a href="#cb8-63" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-64"><a href="#cb8-64" tabindex="-1"></a><span class="co">#&gt; Inferring branch lengths of AncesTrees in sections 0-0...</span></span>
+<span id="cb8-65"><a href="#cb8-65" tabindex="-1"></a><span class="co">#&gt; [0/0]CPU Time spent: 87.593285s; Max Memory usage: 2.2e+03Mb.</span></span>
+<span id="cb8-66"><a href="#cb8-66" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-67"><a href="#cb8-67" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-68"><a href="#cb8-68" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-69"><a href="#cb8-69" tabindex="-1"></a><span class="co">#&gt; Combining AncesTrees in Sections...</span></span>
+<span id="cb8-70"><a href="#cb8-70" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 88.745906s; Max Memory usage: 2.2e+03Mb.</span></span>
+<span id="cb8-71"><a href="#cb8-71" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-72"><a href="#cb8-72" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-73"><a href="#cb8-73" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-74"><a href="#cb8-74" tabindex="-1"></a><span class="co">#&gt; Finalizing...</span></span>
+<span id="cb8-75"><a href="#cb8-75" tabindex="-1"></a><span class="co">#&gt; Number of not mapping SNPs: 414</span></span>
+<span id="cb8-76"><a href="#cb8-76" tabindex="-1"></a><span class="co">#&gt; Number of flipped SNPs    : 77</span></span>
+<span id="cb8-77"><a href="#cb8-77" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 90.646701s; Max Memory usage: 2.2e+03Mb.</span></span>
+<span id="cb8-78"><a href="#cb8-78" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-79"><a href="#cb8-79" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-80"><a href="#cb8-80" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-81"><a href="#cb8-81" tabindex="-1"></a><span class="co">#&gt; Done.</span></span>
+<span id="cb8-82"><a href="#cb8-82" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
+<span id="cb8-83"><a href="#cb8-83" tabindex="-1"></a><span class="co">#&gt; *********************************************************</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="running-twigstats">Running Twigstats<a class="anchor" aria-label="anchor" href="#running-twigstats"></a>
@@ -359,7 +374,7 @@ in two different ways: First, we will compute regular f2-statistics and
 second, we will compute f2-statistics on only recent coalescences.</p>
 <p>We first load the Twigstats package and assign filenames to
 variables.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/leospeidel/twigstats" class="external-link">twigstats</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: dplyr</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -369,35 +384,35 @@ variables.</p>
 <span><span class="co">#&gt;     filter, lag</span></span>
 <span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
-<span></span>
-<span><span class="va">file_anc</span>  <span class="op">&lt;-</span> <span class="st">"1000G_aDNA_mask_transv_chr1.anc.gz"</span></span>
+<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">file_anc</span>  <span class="op">&lt;-</span> <span class="st">"1000G_aDNA_mask_transv_chr1.anc.gz"</span></span>
 <span><span class="va">file_mut</span>  <span class="op">&lt;-</span> <span class="st">"1000G_aDNA_mask_transv_chr1.mut.gz"</span></span>
 <span><span class="va">poplabels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"example/1000GP_Phase3_sub_aDNA.poplabels"</span>, package <span class="op">=</span> <span class="st">"twigstats"</span><span class="op">)</span></span>
 <span><span class="va">file_map</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"example/genetic_map_combined_b37_chr1.txt"</span>, package <span class="op">=</span> <span class="st">"twigstats"</span><span class="op">)</span></span></code></pre></div>
 <p>Next, we compute regular f2 statistics without a time cutoff, and
 then infer the admixture proportion using an f4-ratio statistic:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#Calculate f2s between all pairs of populations</span></span>
 <span><span class="va">f2_blocks</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/f2_blocks_from_Relate.html">f2_blocks_from_Relate</a></span><span class="op">(</span><span class="va">file_anc</span>, <span class="va">file_mut</span>, <span class="va">poplabels</span>, <span class="va">file_map</span>, use_muts <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/f-statistics.html">f4_ratio</a></span><span class="op">(</span><span class="va">f2_blocks</span>, popX<span class="op">=</span><span class="st">"England_Saxon.SG"</span>, popI<span class="op">=</span><span class="st">"Ireland_BA.SG"</span>, pop1<span class="op">=</span><span class="st">"Britain.IronRoman.SG"</span>, pop2<span class="op">=</span><span class="st">"Scandinavian_Peninsula_EIA(I).SG"</span>, popO<span class="op">=</span><span class="st">"YRI"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   popO          popI                 pop1                             pop2</span></span>
 <span><span class="co">#&gt; 1  YRI Ireland_BA.SG Britain.IronRoman.SG Scandinavian_Peninsula_EIA(I).SG</span></span>
 <span><span class="co">#&gt;               popX      val       se</span></span>
-<span><span class="co">#&gt; 1 England_Saxon.SG 3.083356 63.55952</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 England_Saxon.SG 3.031811 60.95149</span></span></code></pre></div>
 <p>As we can see, the inferred admixture proportion is not between 0 and
 1 and the standard errors are extremely large, giving us no meaningful
 inference.</p>
 <p>We now compute f2 statistics on lineages of the past 500 generations
 using Twigstats:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#Use a cutoff of 500 generations</span></span>
 <span><span class="va">f2_blocks</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/f2_blocks_from_Relate.html">f2_blocks_from_Relate</a></span><span class="op">(</span><span class="va">file_anc</span>, <span class="va">file_mut</span>, <span class="va">poplabels</span>, <span class="va">file_map</span>, t <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/f-statistics.html">f4_ratio</a></span><span class="op">(</span><span class="va">f2_blocks</span>, popX<span class="op">=</span><span class="st">"England_Saxon.SG"</span>, popI<span class="op">=</span><span class="st">"Ireland_BA.SG"</span>, pop1<span class="op">=</span><span class="st">"Britain.IronRoman.SG"</span>, pop2<span class="op">=</span><span class="st">"Scandinavian_Peninsula_EIA(I).SG"</span>, popO<span class="op">=</span><span class="st">"YRI"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   popO          popI                 pop1                             pop2</span></span>
 <span><span class="co">#&gt; 1  YRI Ireland_BA.SG Britain.IronRoman.SG Scandinavian_Peninsula_EIA(I).SG</span></span>
 <span><span class="co">#&gt;               popX       val        se</span></span>
-<span><span class="co">#&gt; 1 England_Saxon.SG 0.4189351 0.1824581</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 England_Saxon.SG 0.3812473 0.1750409</span></span></code></pre></div>
 <p>The standard errors are much reduced and we get a meaningful
 <b>admixture proportion of approximately 38% Scandinavian EIA
 ancestry</b>! Note that the standard error is still relatively large
@@ -405,6 +420,36 @@ ancestry</b>! Note that the standard error is still relatively large
 improve power is to use all other chromosomes; here we only used
 chromosome 1. Additionally, we could build Relate trees with more
 samples to get more accurate constrains on dates.</p>
+</div>
+<div class="section level2">
+<h2 id="multiple-chromosomes">Multiple chromosomes<a class="anchor" aria-label="anchor" href="#multiple-chromosomes"></a>
+</h2>
+<p>If you have multiple chromosomes, you can use the argument
+<code>chr</code> in Twigstats functions, which takes an R array with
+chromosome names as input. For <code>file_anc</code>,
+<code>file_mut</code>, and <code>file_map</code>, you will only need to
+specify the filename prefix, such that e.g., the anc files are named
+<code>{r, eval=FALSE} paste0(file_anc,"_chr1.anc.gz")</code> etc.</p>
+<p>E.g., the above Twigstats runs are equivalent to</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">file_anc</span>  <span class="op">&lt;-</span> <span class="st">"1000G_aDNA_mask_transv"</span></span>
+<span><span class="va">file_mut</span>  <span class="op">&lt;-</span> <span class="st">"1000G_aDNA_mask_transv"</span></span>
+<span></span>
+<span><span class="va">path</span>      <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"example/"</span>, package <span class="op">=</span> <span class="st">"twigstats"</span><span class="op">)</span>,<span class="st">"/"</span><span class="op">)</span> <span class="co">#just necessary to get the path to the poplabels file</span></span>
+<span><span class="va">poplabels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">path</span>,<span class="st">"1000GP_Phase3_sub_aDNA.poplabels"</span><span class="op">)</span></span>
+<span><span class="va">file_map</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">path</span>,<span class="st">"genetic_map_combined_b37"</span><span class="op">)</span></span>
+<span><span class="va">chrs</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">1</span></span>
+<span></span>
+<span><span class="co">#Calculate f2s between all pairs of populations</span></span>
+<span><span class="co">#We specify the argument chr, which takes an R array as input</span></span>
+<span><span class="va">f2_blocks</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/f2_blocks_from_Relate.html">f2_blocks_from_Relate</a></span><span class="op">(</span><span class="va">file_anc</span>, <span class="va">file_mut</span>, <span class="va">poplabels</span>, <span class="va">file_map</span>, chr <span class="op">=</span> <span class="va">chrs</span>, t <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">#Once we have f2_blocks we can compute f-statistics as before</span></span>
+<span><span class="fu"><a href="../reference/f-statistics.html">f4_ratio</a></span><span class="op">(</span><span class="va">f2_blocks</span>, popX<span class="op">=</span><span class="st">"England_Saxon.SG"</span>, popI<span class="op">=</span><span class="st">"Ireland_BA.SG"</span>, pop1<span class="op">=</span><span class="st">"Britain.IronRoman.SG"</span>, pop2<span class="op">=</span><span class="st">"Scandinavian_Peninsula_EIA(I).SG"</span>, popO<span class="op">=</span><span class="st">"YRI"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   popO          popI                 pop1                             pop2</span></span>
+<span><span class="co">#&gt; 1  YRI Ireland_BA.SG Britain.IronRoman.SG Scandinavian_Peninsula_EIA(I).SG</span></span>
+<span><span class="co">#&gt;               popX       val        se</span></span>
+<span><span class="co">#&gt; 1 England_Saxon.SG 0.3812473 0.1750409</span></span></code></pre></div>
 </div>
   </div>
 
@@ -425,7 +470,7 @@ samples to get more accurate constrains on dates.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
 </div>
 
       </footer>

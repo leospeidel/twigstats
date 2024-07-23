@@ -31,6 +31,9 @@ To look up where preprepared input files are stored on your computer, please exe
 ```
 print(system.file("example/", package = "twigstats"))
 ```
+
+The overall process should be very straight forward: We first run Relate starting from a phased VCF file, and then run Twigstats on these inferred trees, using a single R function called ```f2_blocks_from_Relate```. This object is then fed into admixtools2 to compute <b>any</b> f-statistic.
+
 In this example, we have already executed the steps detailed under "Preparing the data", so you can skip ahead to "Running Relate".
 
 ## Preparing the data
@@ -52,22 +55,37 @@ Removing all SNPs where any genotype has an imputation posterior <80% is achieve
 ```  
 bcftools view --max-alleles 2 --exclude-types indels 1000G_aDNA_chr1.vcf.gz | 
 bcftools +setGT -- -t q -n . -i'SMPL_MAX(FORMAT/GP)<=0.8' | 
-bcftools view -i 'F_MISSING==0.0' -O z -o 1000G_aDNA_nomiss_chr1.vcf.gz
+bcftools view -i 'F_MISSING==0.0' -O z -o 1000G_aDNA_filtered_chr1.vcf.gz
 ```
-This usually works well with a small number of samples. For larger data sets, this is likely too restrictive. Please note that Relate cannot accept missing data as input, so if you would like to e.g. retain only sites where <2% of genotypes have a posterior <80%, then you will need to first generate a list of BP positions of SNPs to keep, and then subset the original imputed vcf using bcftools. Such a list can be generated e.g. by
+This usually works well with a small number of samples. 
+
+<b>For larger data sets</b>, this is likely too restrictive. Please note that Relate cannot accept missing data as input, so if you would like to e.g. retain only sites where <2% of genotypes have a posterior <80%, then you will need to first generate a list of BP positions of SNPs to keep:
 ```
 bcftools view --max-alleles 2 --exclude-types indels 1000G_aDNA_chr1.vcf.gz | 
 bcftools +setGT -- -t q -n . -i'SMPL_MAX(FORMAT/GP)<=0.8' | 
 bcftools view -i 'F_MISSING<=0.02' | 
-bcftools query -f "%CHROM %BP\n" > BP_chr1.txt
+bcftools query -f "%CHROM\t%POS\n" > BP_chr1.txt
 ```
-We could alternatively use bcftools to annotate each SNP with an INFO score (see [impute-info](https://samtools.github.io/bcftools/howtos/plugins.html) plugin of bcftools) and require a minimum INFO score for each SNP. This score measures how well a SNP is imputed using surrounding haplotype information. 
+We can then subset the original imputed vcf using bcftools:
+```
+bcftools view -R BP_chr1.txt 1000G_aDNA_chr1.vcf.gz -O z -o 1000G_aDNA_filtered_chr1.vcf.gz
+```
+
+Other filtering approaches are also possible, e.g., we can use bcftools to annotate each SNP with an INFO score (see [impute-info](https://samtools.github.io/bcftools/howtos/plugins.html) plugin of bcftools) and require a minimum INFO score for each SNP. This score measures how well a SNP is imputed using surrounding haplotype information. 
+
+#### Genome mask and ancestral genome
+
+You can download the 1000 Genomes Project accessibility masks from this URL for [hg37](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/supporting/accessible_genome_masks/) and [hg38](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_genomes_project/working/20160622_genome_mask_GRCh38/).
+
+The ancestral genome is available here for [hg37](ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/supporting/ancestral_alignments/) and [hg38](https://ftp.ensembl.org/pub/release-86/fasta/ancestral_alleles/).
+
+These files, and a recombination map for hg37 and hg38, can also be downloaded from [here](https://www.dropbox.com/scl/fi/ocvr7m00f4jhfcytew4fy/Relate_input_files.tar?rlkey=j1kuqbo2hgvgfwmudwao0v0wv&dl=0).
 
 #### Subsetting to transversions (optional)
 
 We may also opt to only analyse transversions, which we can extract using the following command
 ```
-bcftools view -i 'TYPE="snp" && ( (REF!="A" || ALT!="G") && (REF!="G" || ALT!="A") && (REF!="C" || ALT!="T") && (REF!="T" || ALT!="C"))' 1000G_aDNA_nomiss_chr1.vcf.gz -O z -o 1000G_aDNA_transv_chr1.vcf.gz
+bcftools view -i 'TYPE="snp" && ( (REF!="A" || ALT!="G") && (REF!="G" || ALT!="A") && (REF!="C" || ALT!="T") && (REF!="T" || ALT!="C"))' 1000G_aDNA_filtered_chr1.vcf.gz -O z -o 1000G_aDNA_transv_chr1.vcf.gz
 ```
 
 #### Conversion to Relate input format
@@ -94,7 +112,6 @@ gzip -f 1000G_aDNA_transv_chr1.sample
 	--mask ./StrictMask_chr1.fa.gz
 ```
 Here, we used a [human ancestral genome](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/supporting/ancestral_alignments/) and [mappability mask](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/supporting/accessible_genome_masks/). These files are avaliable for GRCh38 as well: [human ancestral genome](https://ftp.ensembl.org/pub/release-86/fasta/ancestral_alleles/) and [mappability mask](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_genomes_project/working/20160622_genome_mask_GRCh38/).
-
 
 ## Running Relate
 
@@ -129,7 +146,6 @@ To illustrate a power gain by using Twigstats, we will run Twigstats in two diff
 We first load the Twigstats package and assign filenames to variables.
 ```{r}
 library(twigstats)
-
 file_anc  <- "1000G_aDNA_mask_transv_chr1.anc.gz"
 file_mut  <- "1000G_aDNA_mask_transv_chr1.mut.gz"
 poplabels <- system.file("example/1000GP_Phase3_sub_aDNA.poplabels", package = "twigstats")
@@ -151,4 +167,28 @@ f2_blocks <- f2_blocks_from_Relate(file_anc, file_mut, poplabels, file_map, t = 
 f4_ratio(f2_blocks, popX="England_Saxon.SG", popI="Ireland_BA.SG", pop1="Britain.IronRoman.SG", pop2="Scandinavian_Peninsula_EIA(I).SG", popO="YRI")
 ```
 The standard errors are much reduced and we get a meaningful <b>admixture proportion of approximately 38% Scandinavian EIA ancestry</b>! Note that the standard error is still relatively large (though excludes 0 and 1 as feasible proportions). The obvious way to improve power is to use all other chromosomes; here we only used chromosome 1. Additionally, we could build Relate trees with more samples to get more accurate constrains on dates.
+
+## Multiple chromosomes
+
+If you have multiple chromosomes, you can use the argument ```chr``` in Twigstats functions, which takes an R array with chromosome names as input. For ```file_anc```, ```file_mut```, and ```file_map```, you will only need to specify the filename prefix, such that e.g., the anc files are named ```{r, eval=FALSE} paste0(file_anc,"_chr1.anc.gz")``` etc.
+
+E.g., the above Twigstats runs are equivalent to
+```{r}
+file_anc  <- "1000G_aDNA_mask_transv"
+file_mut  <- "1000G_aDNA_mask_transv"
+
+path      <- paste0(system.file("example/", package = "twigstats"),"/") #just necessary to get the path to the poplabels file
+poplabels <- paste0(path,"1000GP_Phase3_sub_aDNA.poplabels")
+file_map  <- paste0(path,"genetic_map_combined_b37")
+chrs <- 1:1
+
+#Calculate f2s between all pairs of populations
+#We specify the argument chr, which takes an R array as input
+f2_blocks <- f2_blocks_from_Relate(file_anc, file_mut, poplabels, file_map, chr = chrs, t = 500)
+
+#Once we have f2_blocks we can compute f-statistics as before
+f4_ratio(f2_blocks, popX="England_Saxon.SG", popI="Ireland_BA.SG", pop1="Britain.IronRoman.SG", pop2="Scandinavian_Peninsula_EIA(I).SG", popO="YRI")
+
+```
+
 

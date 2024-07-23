@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
@@ -102,8 +102,10 @@
     
     
 <p>The main use-case of Twigstats is to compute <b>f2-statistics for
-pairs of populations</b>. The output can then directly be fed into
-functions of the admixtools2 R package (<a href="https://uqrmaie1.github.io/admixtools/index.html" class="external-link uri">https://uqrmaie1.github.io/admixtools/index.html</a>) to
+pairs of populations</b>. This is very straight forward: We compute
+these using a single function call in R, using the output files of
+Relate as input. The output can then directly be fed into functions of
+the admixtools2 R package (<a href="https://uqrmaie1.github.io/admixtools/index.html" class="external-link uri">https://uqrmaie1.github.io/admixtools/index.html</a>) to
 <b>compute any other f-statistic</b>.<br></p>
 <p>Each function implemented in the Twigstats package is described on
 this page: <a href="https://leospeidel.com/twigstats_old/reference" class="external-link">leospeidel.com/twigstats/reference</a>.</p>
@@ -187,8 +189,9 @@ genealogies.</li>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
 <span><span class="co">#&gt;   pop1  pop2  pop3  pop4      est       se     z         p</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P4    P3    P2    PX    0.001<span style="text-decoration: underline;">27</span> 0.000<span style="text-decoration: underline;">314</span>  4.04 0.000<span style="text-decoration: underline;">054</span>3</span></span>
-<span><span class="co">#with twigstats ascertainment</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P4    P3    P2    PX    0.001<span style="text-decoration: underline;">27</span> 0.000<span style="text-decoration: underline;">314</span>  4.04 0.000<span style="text-decoration: underline;">054</span>3</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#with twigstats ascertainment</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/admixtools/man/qpdstat.html" class="external-link">f4</a></span><span class="op">(</span><span class="va">f2_blocks2</span>, <span class="st">"P4"</span>, <span class="st">"P3"</span>, <span class="st">"P2"</span>, <span class="st">"PX"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
 <span><span class="co">#&gt;   pop1  pop2  pop3  pop4       est        se     z         p</span></span>
@@ -216,7 +219,7 @@ files and mutation ages (.mut) as input.<br> Please type
 <p>We will begin with assigning filenames to the following variables. In
 our case, all files are stored under <code>path</code> and have prefix
 <code>pref</code>.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"sim/"</span>, package <span class="op">=</span> <span class="st">"twigstats"</span><span class="op">)</span>,<span class="st">"/"</span><span class="op">)</span></span>
 <span><span class="va">pref</span> <span class="op">&lt;-</span> <span class="st">"msprime_ad0.8_split250_1"</span></span>
 <span><span class="va">file_plink</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">path</span>,<span class="va">pref</span><span class="op">)</span> <span class="co">#only need prefix</span></span>
@@ -224,7 +227,7 @@ our case, all files are stored under <code>path</code> and have prefix
 <p>Next, we compute f2-statistics as normal on the plink format and plug
 these into an f4-ratio statistic to estimate the admixture
 proportion.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#Compute regular f2 statistics between all pairs of populations. You can use pops to only calculate f2s between specified populations.</span></span>
 <span><span class="va">f2_blocks1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/f2_blocks_from_RelateAges.html">f2_blocks_from_RelateAges</a></span><span class="op">(</span>pref <span class="op">=</span> <span class="va">file_plink</span>, <span class="va">file_mut</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/f-statistics.html">f4_ratio</a></span><span class="op">(</span><span class="va">f2_blocks1</span>, popX<span class="op">=</span><span class="st">"PX"</span>, popI<span class="op">=</span><span class="st">"P1"</span>, pop1<span class="op">=</span><span class="st">"P2"</span>, pop2<span class="op">=</span><span class="st">"P3"</span>, popO<span class="op">=</span><span class="st">"P4"</span><span class="op">)</span></span>
@@ -235,7 +238,7 @@ dmixture proportion is very large. This shows we are lacking power using
 the standard f-statistics approach.</p>
 <p>We can now ascertain mutations by age. Here we choose a cutoff of 500
 generations:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#Use a cutoff of 500 generations</span></span>
 <span><span class="va">f2_blocks2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/f2_blocks_from_RelateAges.html">f2_blocks_from_RelateAges</a></span><span class="op">(</span>pref <span class="op">=</span> <span class="va">file_plink</span>, <span class="va">file_mut</span>, t <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/f-statistics.html">f4_ratio</a></span><span class="op">(</span><span class="va">f2_blocks2</span>, popX<span class="op">=</span><span class="st">"PX"</span>, popI<span class="op">=</span><span class="st">"P1"</span>, pop1<span class="op">=</span><span class="st">"P2"</span>, pop2<span class="op">=</span><span class="st">"P3"</span>, popO<span class="op">=</span><span class="st">"P4"</span><span class="op">)</span></span>
@@ -258,15 +261,16 @@ to calculate f2 statistics at 1240k sites</li>
 <h3 id="using-admixtools2-1">Using admixtools2<a class="anchor" aria-label="anchor" href="#using-admixtools2-1"></a>
 </h3>
 <p>We can now directly feed this into admixtools2 functions:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/uqrmaie1/admixtools" class="external-link">admixtools</a></span><span class="op">)</span></span>
 <span><span class="co">#no twigstats ascertainment</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/admixtools/man/qpdstat.html" class="external-link">f4</a></span><span class="op">(</span><span class="va">f2_blocks1</span>, <span class="st">"P4"</span>, <span class="st">"P3"</span>, <span class="st">"P2"</span>, <span class="st">"PX"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
 <span><span class="co">#&gt;   pop1  pop2  pop3  pop4      est       se     z        p</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P4    P3    P2    PX    0.001<span style="text-decoration: underline;">16</span> 0.000<span style="text-decoration: underline;">305</span>  3.81 0.000<span style="text-decoration: underline;">139</span></span></span>
-<span><span class="co">#with twigstats ascertainment</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P4    P3    P2    PX    0.001<span style="text-decoration: underline;">16</span> 0.000<span style="text-decoration: underline;">305</span>  3.81 0.000<span style="text-decoration: underline;">139</span></span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#with twigstats ascertainment</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/admixtools/man/qpdstat.html" class="external-link">f4</a></span><span class="op">(</span><span class="va">f2_blocks2</span>, <span class="st">"P4"</span>, <span class="st">"P3"</span>, <span class="st">"P2"</span>, <span class="st">"PX"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
 <span><span class="co">#&gt;   pop1  pop2  pop3  pop4       est        se     z         p</span></span>
@@ -295,7 +299,7 @@ Twigstats, consistent with PX being a mixture of P2 and P3.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
 </div>
 
       </footer>
