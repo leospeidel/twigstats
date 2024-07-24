@@ -21,6 +21,12 @@ This function computes admixture proprtions using a non-negative least squares o
 }
 \examples{
 library(dplyr)
+if (!requireNamespace("tidyr", quietly = TRUE)) {
+  stop("This example needs 'tidyr'. Please install it.", call. = FALSE)
+}
+if (!requireNamespace("lsei", quietly = TRUE)) {
+  stop("This example needs 'lsei'. Please install it.", call. = FALSE)
+}
 
 #This path stores files precomputed using Painting().
 path      <- paste0(system.file("test/", package = "twigstats"),"/")
