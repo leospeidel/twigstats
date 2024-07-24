@@ -1,4 +1,5 @@
 library(dplyr)
+library(tidyr)
 
 #' Function to compute genome-wide copying proportions.
 #'
