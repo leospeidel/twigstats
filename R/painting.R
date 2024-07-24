@@ -1,5 +1,9 @@
 library(dplyr)
 
+#' @useDynLib twigstats, .registration=TRUE
+#' @importFrom Rcpp evalCpp
+#' @exportPattern "^[[:alpha:]]+"
+
 #' Function to compute genome-wide copying proportions.
 #'
 #' This function takes the output of the function Painting and computes the genome-wide 'copying vectors', 
