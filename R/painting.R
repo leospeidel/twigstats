@@ -11,6 +11,9 @@ library(dplyr)
 #' @param blocksize Number of blocks to combine for the bootstrap. E.g. if Painting was run with a blgsize of 1e-5 Morgans, blocksize should be 5000 to achieve a blocksize of 5cM.
 #' @param use_IDs If TRUE, compute profile for each sample. If FALSE (default), compute profile for each group as specified in the second column of the idfile.
 #' @return Returns a data frame with copying proportions per bootstrap sample.
+#' @useDynLib twigstats, .registration=TRUE
+#' @importFrom Rcpp evalCpp
+#' @exportPattern "^[[:alpha:]]+"
 #' @examples
 #' #This path stores files precomputed using Painting().
 #' path      <- paste0(system.file("test/", package = "twigstats"),"/")
@@ -158,3 +161,4 @@ PaintingNNLS <- function(df_sum, target_pops, source_pops = NULL){
 	return(res)
 
 }
+

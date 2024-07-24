@@ -24,7 +24,7 @@ pre[class] {
 }
 ```
 
-The overall process should be <b>very straight forward</b>: 
+The overall process should be <b>straight forward</b>: 
 
 1. We first run Relate starting from a phased VCF file
 2. Then we run Twigstats on these inferred trees, using a single R function called ```f2_blocks_from_Relate```. 
