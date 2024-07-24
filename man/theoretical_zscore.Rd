@@ -19,7 +19,7 @@ theoretical_zscore(t, a, s, alpha)
 Returns the theoretical z-score value.
 }
 \description{
-This function computes the theoretical z-score of an f4-statistic of the form f4(PO,P2,PX,P1) 
-as a function of the admixture time a, source (P1 & P2) split time s, and admixture proportion alpha. 
+This function computes the theoretical z-score of an f4-statistic of the form f4(PO,P2,PX,P1)
+as a function of the admixture time a, source (P1 & P2) split time s, and admixture proportion alpha.
 It assumes a single lineage is sampled from each population.
 }

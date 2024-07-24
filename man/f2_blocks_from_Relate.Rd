@@ -56,7 +56,7 @@ f2_blocks_from_Relate(
 \description{
 This function will calculate f2 statistics in blocks of prespecified size for all pairs of populations specified in the poplabels file.
 Please refer to the Relate documentation for input file formats (https://myersgroup.github.io/relate/).
-The output is in a format that is directly accepted by the admixtools R package to calculate 
+The output is in a format that is directly accepted by the admixtools R package to calculate
 f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtools/).
 }
 \examples{

@@ -30,7 +30,7 @@ f2_blocks_from_RelateAges(
 
 \item{transitions}{(Optional) Set this to FALSE to exclude transition SNPs}
 
-\item{maxmiss}{(Optional) Discard SNPs which are missing in a fraction of populations higher than ‘maxmiss}
+\item{maxmiss}{(Optional) Discard SNPs which are missing in a fraction of populations higher than maxmiss}
 
 \item{fam}{(Optional) 1d-array assigning individuals to populations. Corresponds to the first column in the fam file and is useful if you want to change population assignments.}
 
@@ -56,7 +56,7 @@ f2_blocks_from_RelateAges(
 \description{
 This function will calculate f2 statistics in blocks of prespecified size for all pairs of populations specified in the input files.
 Input is assumed to be in PLINK binary format https://www.cog-genomics.org/plink/1.9/formats#bed and mutation ages are in Relate mut format https://myersgroup.github.io/relate/.
-The output is in a format that is directly accepted by the admixtools R package to calculate 
+The output is in a format that is directly accepted by the admixtools R package to calculate
 f2, f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtools/).
 }
 \examples{
