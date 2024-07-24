@@ -27,7 +27,7 @@ PaintingProfile(
 Returns a data frame with copying proportions per bootstrap sample.
 }
 \description{
-This function takes the output of the function Painting and computes the genome-wide 'copying vectors', 
+This function takes the output of the function Painting and computes the genome-wide 'copying vectors',
 i.e. the proportion of the genome copied from each other reference population..
 }
 \examples{

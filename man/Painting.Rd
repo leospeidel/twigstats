@@ -44,7 +44,7 @@ Output is in GLOBEtrotter format.
 file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
 poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
 
 #define populations to paint against:
 pops <- c("P1","P2","P3","P4")

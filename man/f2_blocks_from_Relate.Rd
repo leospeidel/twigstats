@@ -56,14 +56,14 @@ f2_blocks_from_Relate(
 \description{
 This function will calculate f2 statistics in blocks of prespecified size for all pairs of populations specified in the poplabels file.
 Please refer to the Relate documentation for input file formats (https://myersgroup.github.io/relate/).
-The output is in a format that is directly accepted by the admixtools R package to calculate 
+The output is in a format that is directly accepted by the admixtools R package to calculate
 f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtools/).
 }
 \examples{
 file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
 poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
 
 #Calculate f2s between all pairs of populations
 f2_blocks <- f2_blocks_from_Relate(file_anc, file_mut, poplabels, file_map)

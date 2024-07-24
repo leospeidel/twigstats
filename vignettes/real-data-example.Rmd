@@ -36,7 +36,7 @@ We will use chromosome 1 of 25 publicly available low coverage shotgun genomes f
 To look up where preprepared input files are stored on your computer, please clone the Twigstats github repository and execute the following command:
 ```
 git checkout documentation
-print(system.file("example/", package = "twigstats"))
+ls inst/example/
 ```
 
 In this example, we have already executed the steps detailed under "Preparing the data", so you can skip ahead to "Running Relate".

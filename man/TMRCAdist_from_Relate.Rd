@@ -44,7 +44,7 @@ Please refer to the Relate documentation for input file formats (https://myersgr
 file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
 poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
 
 #Calculate f2s between all pairs of populations
 TMRCAdist_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map, epochs = c(0,10^seq(3,7,length.out=49)/28))

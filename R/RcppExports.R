@@ -27,7 +27,7 @@
 #' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 #' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
 #' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-#' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+#' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
 #'
 #' #Calculate f2s between all pairs of populations
 #' f2_blocks <- f2_blocks_from_Relate(file_anc, file_mut, poplabels, file_map)
@@ -38,7 +38,7 @@
 #' f4_ratio(f2_blocks, popX="PX", popI="P1", pop1="P2", pop2="P3", popO="P4")
 #' @export
 f2_blocks_from_Relate <- function(file_anc, file_mut, poplabels, file_map = NULL, chrs = NULL, blgsize = NULL, mu = NULL, tmin = NULL, t = NULL, transitions = NULL, use_muts = NULL, minMAF = NULL, dump_blockpos = NULL, apply_corr = NULL) {
-    .Call(`_twigstats_f2_blocks_from_Relate`, file_anc, file_mut, poplabels, file_map, chrs, blgsize, mu, tmin, t, transitions, use_muts, minMAF, dump_blockpos, apply_corr)
+    .Call('_twigstats_f2_blocks_from_Relate', PACKAGE = 'twigstats', file_anc, file_mut, poplabels, file_map, chrs, blgsize, mu, tmin, t, transitions, use_muts, minMAF, dump_blockpos, apply_corr)
 }
 
 #' Function to calculate f2 statistics from plink files, ascertained using mutation ages in Relate trees.
@@ -54,7 +54,7 @@ f2_blocks_from_Relate <- function(file_anc, file_mut, poplabels, file_map = NULL
 #' @param t (Optional) Time cutoff in generations. Any mutations older that t will be excluded from the analysis. Default: t = Inf.
 #' @param tmin (Optional) Minimum time cutof in generations. Any mutations younger than tmin will be excluded from the analysis. Default: t = 0.
 #' @param transitions (Optional) Set this to FALSE to exclude transition SNPs
-#' @param maxmiss (Optional) Discard SNPs which are missing in a fraction of populations higher than ‘maxmiss
+#' @param maxmiss (Optional) Discard SNPs which are missing in a fraction of populations higher than maxmiss
 #' @param pops (Optional) Populations for which data should be extracted. Names need to match the first column in the fam file (or fam option below)
 #' @param fam (Optional) 1d-array assigning individuals to populations. Corresponds to the first column in the fam file and is useful if you want to change population assignments.
 #' @param chrs (Optional) List chromosome names to use.
@@ -69,6 +69,8 @@ f2_blocks_from_Relate <- function(file_anc, file_mut, poplabels, file_map = NULL
 #' file_plink <- paste0(path,pref) #only need prefix
 #' file_mut  <- paste0(path,pref) #only need prefix (here same name as plink file but can be different)
 #'
+#' system(paste0("gunzip ", file_plink, ".bim.gz"))
+#'
 #' #Compute f2 statistics between all pairs of populations. You can use pops to only calculate f2s between specified populations.
 #' f2_blocks <- f2_blocks_from_RelateAges(pref = file_plink, file_mut)
 #' f4_ratio(f2_blocks, popX="PX", popI="P1", pop1="P2", pop2="P3", popO="P4")
@@ -78,7 +80,7 @@ f2_blocks_from_Relate <- function(file_anc, file_mut, poplabels, file_map = NULL
 #' f4_ratio(f2_blocks, popX="PX", popI="P1", pop1="P2", pop2="P3", popO="P4")
 #' @export
 f2_blocks_from_RelateAges <- function(pref, file_mut, blgsize = NULL, transitions = NULL, maxmiss = NULL, fam = NULL, pops = NULL, chrs = NULL, tmin = NULL, t = NULL, include_undated = NULL, minMAF = NULL, apply_corr = NULL, debug_mode = 0L) {
-    .Call(`_twigstats_f2_blocks_from_RelateAges`, pref, file_mut, blgsize, transitions, maxmiss, fam, pops, chrs, tmin, t, include_undated, minMAF, apply_corr, debug_mode)
+    .Call('_twigstats_f2_blocks_from_RelateAges', PACKAGE = 'twigstats', pref, file_mut, blgsize, transitions, maxmiss, fam, pops, chrs, tmin, t, include_undated, minMAF, apply_corr, debug_mode)
 }
 
 #' Chromosome painting using genealogies.
@@ -100,7 +102,7 @@ f2_blocks_from_RelateAges <- function(pref, file_mut, blgsize = NULL, transition
 #' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 #' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
 #' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-#' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+#' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
 #'
 #' #define populations to paint against:
 #' pops <- c("P1","P2","P3","P4")
@@ -108,7 +110,7 @@ f2_blocks_from_RelateAges <- function(pref, file_mut, blgsize = NULL, transition
 #' Painting(file_anc, file_mut, file_map, file_out = "test", poplabels, blgsize = 1e-5)
 #' @export
 Painting <- function(file_anc, file_mut, file_map, file_out, poplabels, blgsize = NULL, pops = NULL, chrs = NULL) {
-    invisible(.Call(`_twigstats_Painting`, file_anc, file_mut, file_map, file_out, poplabels, blgsize, pops, chrs))
+    invisible(.Call('_twigstats_Painting', PACKAGE = 'twigstats', file_anc, file_mut, file_map, file_out, poplabels, blgsize, pops, chrs))
 }
 
 #' Function to calculate first coalescence copying vector for each population specified in poplabels file.
@@ -136,7 +138,7 @@ Painting <- function(file_anc, file_mut, file_map, file_out, poplabels, blgsize 
 #'
 #' @export
 ExpPaintingProfile <- function(file_anc, file_mut, poplabels, pops = NULL, chrs = NULL) {
-    .Call(`_twigstats_ExpPaintingProfile`, file_anc, file_mut, poplabels, pops, chrs)
+    .Call('_twigstats_ExpPaintingProfile', PACKAGE = 'twigstats', file_anc, file_mut, poplabels, pops, chrs)
 }
 
 #' Function to calculates mean TMRCAs from Relate trees for pairs of populations specified in poplabels.
@@ -158,13 +160,13 @@ ExpPaintingProfile <- function(file_anc, file_mut, poplabels, pops = NULL, chrs 
 #' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 #' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
 #' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-#' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+#' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
 #'
 #' #Calculate f2s between all pairs of populations
 #' TMRCA_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map)
 #' @export
 TMRCA_from_Relate <- function(file_anc, file_mut, poplabels, file_out, file_map = NULL, chrs = NULL, t = NULL, blgsize = NULL) {
-    invisible(.Call(`_twigstats_TMRCA_from_Relate`, file_anc, file_mut, poplabels, file_out, file_map, chrs, t, blgsize))
+    invisible(.Call('_twigstats_TMRCA_from_Relate', PACKAGE = 'twigstats', file_anc, file_mut, poplabels, file_out, file_map, chrs, t, blgsize))
 }
 
 #' Function to calculates TMRCA distributions from Relate trees for pairs of populations specified in poplabels.
@@ -186,12 +188,12 @@ TMRCA_from_Relate <- function(file_anc, file_mut, poplabels, file_out, file_map 
 #' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 #' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
 #' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-#' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+#' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
 #'
 #' #Calculate f2s between all pairs of populations
 #' TMRCAdist_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map, epochs = c(0,10^seq(3,7,length.out=49)/28))
 #' @export
 TMRCAdist_from_Relate <- function(file_anc, file_mut, poplabels, file_out, epochs, file_map = NULL, chrs = NULL, t = NULL, blgsize = NULL) {
-    invisible(.Call(`_twigstats_TMRCAdist_from_Relate`, file_anc, file_mut, poplabels, file_out, epochs, file_map, chrs, t, blgsize))
+    invisible(.Call('_twigstats_TMRCAdist_from_Relate', PACKAGE = 'twigstats', file_anc, file_mut, poplabels, file_out, epochs, file_map, chrs, t, blgsize))
 }
 

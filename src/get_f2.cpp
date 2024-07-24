@@ -563,7 +563,7 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 //' @param t (Optional) Time cutoff in generations. Any mutations older that t will be excluded from the analysis. Default: t = Inf.
 //' @param tmin (Optional) Minimum time cutof in generations. Any mutations younger than tmin will be excluded from the analysis. Default: t = 0.
 //' @param transitions (Optional) Set this to FALSE to exclude transition SNPs
-//' @param maxmiss (Optional) Discard SNPs which are missing in a fraction of populations higher than ‘maxmiss
+//' @param maxmiss (Optional) Discard SNPs which are missing in a fraction of populations higher than maxmiss
 //' @param pops (Optional) Populations for which data should be extracted. Names need to match the first column in the fam file (or fam option below)
 //' @param fam (Optional) 1d-array assigning individuals to populations. Corresponds to the first column in the fam file and is useful if you want to change population assignments.
 //' @param chrs (Optional) List chromosome names to use.
