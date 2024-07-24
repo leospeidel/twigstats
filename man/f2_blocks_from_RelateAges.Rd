@@ -65,6 +65,8 @@ pref <- "msprime_ad0.8_split250_1"
 file_plink <- paste0(path,pref) #only need prefix
 file_mut  <- paste0(path,pref) #only need prefix (here same name as plink file but can be different)
 
+system(paste0("gunzip ", file_plink, ".bim.gz"))
+
 #Compute f2 statistics between all pairs of populations. You can use pops to only calculate f2s between specified populations.
 f2_blocks <- f2_blocks_from_RelateAges(pref = file_plink, file_mut)
 f4_ratio(f2_blocks, popX="PX", popI="P1", pop1="P2", pop2="P3", popO="P4")

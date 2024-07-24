@@ -238,7 +238,7 @@ traverseTMRCAdist(const MarginalTree& mtr, std::vector<Leaves>& desc, std::vecto
 //' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 //' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
 //' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-//' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+//' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
 //'
 //' #Calculate f2s between all pairs of populations
 //' f2_blocks <- f2_blocks_from_Relate(file_anc, file_mut, poplabels, file_map)
@@ -577,6 +577,8 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 //' pref <- "msprime_ad0.8_split250_1"
 //' file_plink <- paste0(path,pref) #only need prefix
 //' file_mut  <- paste0(path,pref) #only need prefix (here same name as plink file but can be different)
+//'
+//' system(paste0("gunzip ", file_plink, ".bim.gz"))
 //'
 //' #Compute f2 statistics between all pairs of populations. You can use pops to only calculate f2s between specified populations.
 //' f2_blocks <- f2_blocks_from_RelateAges(pref = file_plink, file_mut)
@@ -1059,7 +1061,7 @@ NumericVector f2_blocks_from_RelateAges( SEXP pref, SEXP file_mut, Nullable<doub
 //' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 //' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
 //' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-//' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+//' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
 //'
 //' #define populations to paint against:
 //' pops <- c("P1","P2","P3","P4")
@@ -1681,7 +1683,7 @@ NumericVector ExpPaintingProfile( SEXP file_anc, SEXP file_mut, SEXP poplabels, 
 //' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 //' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
 //' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-//' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+//' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
 //'
 //' #Calculate f2s between all pairs of populations
 //' TMRCA_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map)
@@ -1931,7 +1933,7 @@ void TMRCA_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_
 //' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 //' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
 //' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-//' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+//' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
 //'
 //' #Calculate f2s between all pairs of populations
 //' TMRCAdist_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map, epochs = c(0,10^seq(3,7,length.out=49)/28))

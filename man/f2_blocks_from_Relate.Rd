@@ -63,7 +63,7 @@ f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtools/).
 file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
 file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
 poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats")
+file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
 
 #Calculate f2s between all pairs of populations
 f2_blocks <- f2_blocks_from_Relate(file_anc, file_mut, poplabels, file_map)
