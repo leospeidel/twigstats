@@ -48,7 +48,7 @@ f2_blocks_from_Relate <- function(file_anc, file_mut, poplabels, file_map = NULL
 #' The output is in a format that is directly accepted by the admixtools R package to calculate 
 #' f2, f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtools/).
 #'
-#' @param pref Prefix of PLINK binary files, assuming filenames of form $\{pref\}.bed, $\{pref\}.bim, ${pref}.fam.
+#' @param pref Prefix of PLINK binary files, assuming filenames of form $\{pref\}.bed, $\{pref\}.bim, $\{pref\}.fam.
 #' @param file_mut (Optional) Prefix of filenames of mut files, assuming filenames of form $\{file_mut\}_chr1.mut(.gz). Chromosome names have to be consistent to those in the PLINK files. If no file is specified, all mutations in the PLINK file are used.
 #' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
 #' @param t (Optional) Time cutoff in generations. Any mutations older that t will be excluded from the analysis. Default: t = Inf.
