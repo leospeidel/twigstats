@@ -22,7 +22,7 @@ f2_blocks_from_RelateAges(
 )
 }
 \arguments{
-\item{pref}{Prefix of PLINK binary files, assuming filenames of form $\{pref\}.bed, $\{pref\}.bim, ${pref}.fam.}
+\item{pref}{Prefix of PLINK binary files, assuming filenames of form $\{pref\}.bed, $\{pref\}.bim, $\{pref\}.fam.}
 
 \item{file_mut}{(Optional) Prefix of filenames of mut files, assuming filenames of form $\{file_mut\}_chr1.mut(.gz). Chromosome names have to be consistent to those in the PLINK files. If no file is specified, all mutations in the PLINK file are used.}
 

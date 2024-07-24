@@ -99,6 +99,12 @@ PaintingProfile <- function(filename_painting, filename_idfile, nboot, blocksize
 #' @return Returns a data frame with admixture proportions.
 #' @examples
 #' library(dplyr)
+#' if (!requireNamespace("tidyr", quietly = TRUE)) {
+#'   stop("This example needs 'tidyr'. Please install it.", call. = FALSE)
+#' }
+#' if (!requireNamespace("lsei", quietly = TRUE)) {
+#'   stop("This example needs 'lsei'. Please install it.", call. = FALSE)
+#' }
 #'
 #' #This path stores files precomputed using Painting().
 #' path      <- paste0(system.file("test/", package = "twigstats"),"/")
@@ -115,6 +121,13 @@ PaintingProfile <- function(filename_painting, filename_idfile, nboot, blocksize
 #' print(df)
 #' @export
 PaintingNNLS <- function(df_sum, target_pops, source_pops = NULL){
+
+  if (!requireNamespace("tidyr", quietly = TRUE)) {
+    stop("Package 'tidyr' needed for this function to work. Please install it.", call. = FALSE)
+  }
+	if (!requireNamespace("lsei", quietly = TRUE)) {
+		stop("Package 'lsei' needed for this function to work. Please install it.", call. = FALSE)
+	}
 
 	res <- data.frame()
 	if("bootstrap" %in% colnames(df_sum)){

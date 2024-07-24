@@ -11,6 +11,7 @@ Authors@R: as.person(c(
 Maintainer: Leo Speidel <leo.speidel@outlook.com>
 Description: This package takes Relate genealogies as input to compute time-stratified f-statistics.
 License: MIT
+SystemRequirements: zlib
 Imports: 
     Rcpp (>= 1.0.7),
     RcppArmadillo
@@ -24,12 +25,13 @@ Suggests:
     xml2,
     testthat (>= 3.0.0),
     knitr,
-    rmarkdown
+    rmarkdown,
+    tidyr,
+    lsei
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Depends: 
     R (>= 3.6.0),
-		dplyr,
-		tidyr
+    dplyr
 VignetteBuilder: knitr

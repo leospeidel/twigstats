@@ -20,14 +20,14 @@ library(dplyr)
 #' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
 #' #see https://myersgroup.github.io/relate/input_data.html for file formats
 #' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-#' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats") #recombination map (three column format)
+#' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats") #recombination map (three column format)
 #' 
 #' #Calculate regular f2s between all pairs of populations
-#' f2_blocks1 <- f2_blocks_from_Relate(file_anc, file_mut, poplabels, file_map)
+#' f2_blocks1 <- f2_blocks_from_Relate(file_anc = file_anc, file_mut = file_mut, poplabels = poplabels, file_map = file_map)
 #' f4_ratio(f2_blocks1, popX="PX", popI="P1", pop1="P2", pop2="P3", popO="P4")
 #' 
 #' #Use a twigstats cutoff of 500 generations
-#' f2_blocks2 <- f2_blocks_from_Relate(file_anc, file_mut, poplabels, file_map, t = 500)
+#' f2_blocks2 <- f2_blocks_from_Relate(file_anc = file_anc, file_mut = file_mut, poplabels = poplabels, file_map = file_map, t = 500)
 #' f4_ratio(f2_blocks2, popX="PX", popI="P1", pop1="P2", pop2="P3", popO="P4") 
 #' @export 
 f4_ratio <- function(f2_blocks, popO,popI,pop1,pop2,popX, mode = 1){

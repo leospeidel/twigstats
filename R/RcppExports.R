@@ -38,7 +38,7 @@
 #' f4_ratio(f2_blocks, popX="PX", popI="P1", pop1="P2", pop2="P3", popO="P4")
 #' @export
 f2_blocks_from_Relate <- function(file_anc, file_mut, poplabels, file_map = NULL, chrs = NULL, blgsize = NULL, mu = NULL, tmin = NULL, t = NULL, transitions = NULL, use_muts = NULL, minMAF = NULL, dump_blockpos = NULL, apply_corr = NULL) {
-    .Call('_twigstats_f2_blocks_from_Relate', PACKAGE = 'twigstats', file_anc, file_mut, poplabels, file_map, chrs, blgsize, mu, tmin, t, transitions, use_muts, minMAF, dump_blockpos, apply_corr)
+    .Call(`_twigstats_f2_blocks_from_Relate`, file_anc, file_mut, poplabels, file_map, chrs, blgsize, mu, tmin, t, transitions, use_muts, minMAF, dump_blockpos, apply_corr)
 }
 
 #' Function to calculate f2 statistics from plink files, ascertained using mutation ages in Relate trees.
@@ -48,7 +48,7 @@ f2_blocks_from_Relate <- function(file_anc, file_mut, poplabels, file_map = NULL
 #' The output is in a format that is directly accepted by the admixtools R package to calculate 
 #' f2, f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtools/).
 #'
-#' @param pref Prefix of PLINK binary files, assuming filenames of form $\{pref\}.bed, $\{pref\}.bim, ${pref}.fam.
+#' @param pref Prefix of PLINK binary files, assuming filenames of form $\{pref\}.bed, $\{pref\}.bim, $\{pref\}.fam.
 #' @param file_mut (Optional) Prefix of filenames of mut files, assuming filenames of form $\{file_mut\}_chr1.mut(.gz). Chromosome names have to be consistent to those in the PLINK files. If no file is specified, all mutations in the PLINK file are used.
 #' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
 #' @param t (Optional) Time cutoff in generations. Any mutations older that t will be excluded from the analysis. Default: t = Inf.
@@ -80,7 +80,7 @@ f2_blocks_from_Relate <- function(file_anc, file_mut, poplabels, file_map = NULL
 #' f4_ratio(f2_blocks, popX="PX", popI="P1", pop1="P2", pop2="P3", popO="P4")
 #' @export
 f2_blocks_from_RelateAges <- function(pref, file_mut, blgsize = NULL, transitions = NULL, maxmiss = NULL, fam = NULL, pops = NULL, chrs = NULL, tmin = NULL, t = NULL, include_undated = NULL, minMAF = NULL, apply_corr = NULL, debug_mode = 0L) {
-    .Call('_twigstats_f2_blocks_from_RelateAges', PACKAGE = 'twigstats', pref, file_mut, blgsize, transitions, maxmiss, fam, pops, chrs, tmin, t, include_undated, minMAF, apply_corr, debug_mode)
+    .Call(`_twigstats_f2_blocks_from_RelateAges`, pref, file_mut, blgsize, transitions, maxmiss, fam, pops, chrs, tmin, t, include_undated, minMAF, apply_corr, debug_mode)
 }
 
 #' Chromosome painting using genealogies.
@@ -110,7 +110,7 @@ f2_blocks_from_RelateAges <- function(pref, file_mut, blgsize = NULL, transition
 #' Painting(file_anc, file_mut, file_map, file_out = "test", poplabels, blgsize = 1e-5)
 #' @export
 Painting <- function(file_anc, file_mut, file_map, file_out, poplabels, blgsize = NULL, pops = NULL, chrs = NULL) {
-    invisible(.Call('_twigstats_Painting', PACKAGE = 'twigstats', file_anc, file_mut, file_map, file_out, poplabels, blgsize, pops, chrs))
+    invisible(.Call(`_twigstats_Painting`, file_anc, file_mut, file_map, file_out, poplabels, blgsize, pops, chrs))
 }
 
 #' Function to calculate first coalescence copying vector for each population specified in poplabels file.
@@ -138,7 +138,7 @@ Painting <- function(file_anc, file_mut, file_map, file_out, poplabels, blgsize 
 #'
 #' @export
 ExpPaintingProfile <- function(file_anc, file_mut, poplabels, pops = NULL, chrs = NULL) {
-    .Call('_twigstats_ExpPaintingProfile', PACKAGE = 'twigstats', file_anc, file_mut, poplabels, pops, chrs)
+    .Call(`_twigstats_ExpPaintingProfile`, file_anc, file_mut, poplabels, pops, chrs)
 }
 
 #' Function to calculates mean TMRCAs from Relate trees for pairs of populations specified in poplabels.
@@ -166,7 +166,7 @@ ExpPaintingProfile <- function(file_anc, file_mut, poplabels, pops = NULL, chrs 
 #' TMRCA_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map)
 #' @export
 TMRCA_from_Relate <- function(file_anc, file_mut, poplabels, file_out, file_map = NULL, chrs = NULL, t = NULL, blgsize = NULL) {
-    invisible(.Call('_twigstats_TMRCA_from_Relate', PACKAGE = 'twigstats', file_anc, file_mut, poplabels, file_out, file_map, chrs, t, blgsize))
+    invisible(.Call(`_twigstats_TMRCA_from_Relate`, file_anc, file_mut, poplabels, file_out, file_map, chrs, t, blgsize))
 }
 
 #' Function to calculates TMRCA distributions from Relate trees for pairs of populations specified in poplabels.
@@ -194,6 +194,6 @@ TMRCA_from_Relate <- function(file_anc, file_mut, poplabels, file_out, file_map 
 #' TMRCAdist_from_Relate(file_anc, file_mut, poplabels, file_out = "test", file_map, epochs = c(0,10^seq(3,7,length.out=49)/28))
 #' @export
 TMRCAdist_from_Relate <- function(file_anc, file_mut, poplabels, file_out, epochs, file_map = NULL, chrs = NULL, t = NULL, blgsize = NULL) {
-    invisible(.Call('_twigstats_TMRCAdist_from_Relate', PACKAGE = 'twigstats', file_anc, file_mut, poplabels, file_out, epochs, file_map, chrs, t, blgsize))
+    invisible(.Call(`_twigstats_TMRCAdist_from_Relate`, file_anc, file_mut, poplabels, file_out, epochs, file_map, chrs, t, blgsize))
 }
 
