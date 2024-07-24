@@ -20,7 +20,7 @@ std::string get_datapath_fromR(std::string filename, std::string packageName){
     Rcpp::Function sys_file = base["system.file"];
     // "inst" field is necessary at this point
     Rcpp::StringVector file_path_sv = sys_file(
-        "inst", "extdata", filename,
+        "inst", "sim", filename,
         Rcpp::_["package"] = packageName,
         Rcpp::_["mustWork"] = true
     );
@@ -32,8 +32,8 @@ std::string get_datapath_fromR(std::string filename, std::string packageName){
 context("Parsing Relate files") {
 	
 	test_that("Open files and count number of tips") {
-		
-		AncMutIterators ancmut(get_datapath_fromR("example.anc.gz", "twigstats"), get_datapath_fromR("example.mut.gz", "twigstats"));
+
+		AncMutIterators ancmut(get_datapath_fromR("msprime_ad0.8_split250_1_chr1.anc.gz", "twigstats"), get_datapath_fromR("msprime_ad0.8_split250_1_chr1.mut.gz", "twigstats"));
 		Data data(ancmut.NumTips(), ancmut.NumSnps());
 		expect_true( data.N == 100 );
 
