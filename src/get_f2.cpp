@@ -535,13 +535,14 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 	}
 
 	sample.groups.push_back("Root");
-
 	f2_block.reshape(sample.groups.size(), sample.groups.size(), blockID);
 	splicenames.resize(blockID);
 
 	NumericVector f2_block_copy(Dimension(sample.groups.size(), sample.groups.size(), blockID));
 	std::copy(f2_block.begin(), f2_block.end(), f2_block_copy.begin());
-	f2_block_copy.attr("dimnames") = List::create(wrap(sample.groups), wrap(sample.groups), wrap(splicenames));
+  CharacterVector dim1 = wrap(sample.groups);
+  CharacterVector dim2 = wrap(splicenames);
+  f2_block_copy.attr("dimnames") = List::create(dim1, dim1, dim2);
 
 	std::cerr << "Block: " << blockID << ", " << "[100%]\r";
 	std::cerr << std::endl;
@@ -1030,7 +1031,10 @@ NumericVector f2_blocks_from_RelateAges( SEXP pref, SEXP file_mut, Nullable<doub
 
 	NumericVector f2_block_copy(Dimension(pops_.size(), pops_.size(), blockID));
 	std::copy(f2_block.begin(), f2_block.end(), f2_block_copy.begin());
-	f2_block_copy.attr("dimnames") = List::create(wrap(pops_), wrap(pops_), wrap(splicenames));
+	
+  CharacterVector dim1 = wrap(pops_);
+  CharacterVector dim2 = wrap(splicenames);
+  f2_block_copy.attr("dimnames") = List::create(dim1, dim1, dim2);
 
 	std::cerr << "Block: " << blockID << ", " << "[100%]\r";
 	std::cerr << std::endl;
@@ -1657,7 +1661,11 @@ NumericVector ExpPaintingProfile( SEXP file_anc, SEXP file_mut, SEXP poplabels, 
 	NumericVector nn_res_copy(Dimension(sample.groups.size(), sample.groups.size(),2));
 	std::copy(nn_res.begin(), nn_res.end(), nn_res_copy.begin());
 	std::vector<std::string> names = {"incl_self", "excl_self"};
-	nn_res_copy.attr("dimnames") = List::create(wrap(sample.groups), wrap(sample.groups), wrap(names));
+
+  CharacterVector dim1 = wrap(sample.groups);
+  CharacterVector dim2 = wrap(names);
+  nn_res_copy.attr("dimnames") = List::create(dim1, dim1, dim2);
+
 
 	return nn_res_copy;
 

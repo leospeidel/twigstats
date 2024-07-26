@@ -11,6 +11,11 @@ Please install this package by running the following command in R:
 library(remotes)
 install_github("leospeidel/twigstats")
 ```
+or
+```R
+install.packages('twigstats', repos = c('https://leospeidel.r-universe.dev', 'https://cloud.r-project.org'))
+```
+
 
 Alternatively, clone this directory (https://github.com/leospeidel/twigstats) and then in R type
 ```R
