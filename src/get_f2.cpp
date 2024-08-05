@@ -223,7 +223,7 @@ traverseTMRCAdist(const MarginalTree& mtr, std::vector<Leaves>& desc, std::vecto
 //' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
 //' @param poplabels Filename of poplabels file
 //' @param chrs (Optional) Vector of chromosome IDs
-//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
+//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
 //' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
 //' @param mu (Optional) Per base per generation mutation rate to scale f2 values. Default: 1.25e-8
 //' @param t (Optional) Time cutoff in generations. Default: Inf
@@ -560,7 +560,7 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 //'
 //' @param pref Prefix of PLINK binary files, assuming filenames of form $\{pref\}.bed, $\{pref\}.bim, $\{pref\}.fam.
 //' @param file_mut (Optional) Prefix of filenames of mut files, assuming filenames of form $\{file_mut\}_chr1.mut(.gz). Chromosome names have to be consistent to those in the PLINK files. If no file is specified, all mutations in the PLINK file are used.
-//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
+//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
 //' @param t (Optional) Time cutoff in generations. Any mutations older that t will be excluded from the analysis. Default: t = Inf.
 //' @param tmin (Optional) Minimum time cutof in generations. Any mutations younger than tmin will be excluded from the analysis. Default: t = 0.
 //' @param transitions (Optional) Set this to FALSE to exclude transition SNPs
@@ -1057,7 +1057,7 @@ NumericVector f2_blocks_from_RelateAges( SEXP pref, SEXP file_mut, Nullable<doub
 //' @param file_map File prefix of recombination map.
 //' @param file_out File prefix of output files
 //' @param poplabels Filename of poplabels file
-//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 1 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
+//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 1 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
 //' @param pops (Optional) Populations for which data should be extracted. Names need to match the second column of the poplabels file
 //' @param chrs (Optional) Vector of chromosome IDs
 //' @return void. Write three files idfile, paint, rec to disc. 
@@ -1683,7 +1683,7 @@ NumericVector ExpPaintingProfile( SEXP file_anc, SEXP file_mut, SEXP poplabels, 
 //' @param poplabels Filename of poplabels file
 //' @param t (Optional) Time cutoff in generations. Any coalescences older that t will be set to t in the analysis. Default: t = Inf.
 //' @param chrs (Optional) Vector of chromosome IDs
-//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
+//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
 //' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
 //' @return 3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.
 //' @keywords internal
@@ -1933,7 +1933,7 @@ void TMRCA_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_
 //' @param poplabels Filename of poplabels file
 //' @param epochs Vector of epoch boundaries. Should start at 0.
 //' @param chrs (Optional) Vector of chromosome IDs
-//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
+//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
 //' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
 //' @return 3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.
 //' @keywords internal

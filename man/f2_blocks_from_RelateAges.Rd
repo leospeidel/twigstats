@@ -26,7 +26,7 @@ f2_blocks_from_RelateAges(
 
 \item{file_mut}{(Optional) Prefix of filenames of mut files, assuming filenames of form $\{file_mut\}_chr1.mut(.gz). Chromosome names have to be consistent to those in the PLINK files. If no file is specified, all mutations in the PLINK file are used.}
 
-\item{blgsize}{(Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.}
+\item{blgsize}{(Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.}
 
 \item{transitions}{(Optional) Set this to FALSE to exclude transition SNPs}
 

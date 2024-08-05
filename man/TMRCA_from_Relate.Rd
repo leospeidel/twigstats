@@ -30,7 +30,7 @@ TMRCA_from_Relate(
 
 \item{t}{(Optional) Time cutoff in generations. Any coalescences older that t will be set to t in the analysis. Default: t = Inf.}
 
-\item{blgsize}{(Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.}
+\item{blgsize}{(Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.}
 }
 \value{
 3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.
