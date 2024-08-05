@@ -31,7 +31,7 @@ TMRCAdist_from_Relate(
 
 \item{chrs}{(Optional) Vector of chromosome IDs}
 
-\item{blgsize}{(Optional) SNP block size in Morgan. Default is 0.05 (50 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.}
+\item{blgsize}{(Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.}
 }
 \value{
 3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.
