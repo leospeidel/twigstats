@@ -59,7 +59,7 @@ PaintingProfile <- function(filename_painting, filename_idfile, nboot, blocksize
 		#df_chr <- read.table(pipe(paste0("sed -n '3~2p' ", file)))
 
 		df_chr <- df_chr[,-1]
-		df_chr <- df_chr[order(ids[,2]),]
+		#df_chr <- df_chr[order(ids[,idcol]),]
 		n <- ncol(df_chr)
 		df_chr <- ids[t(as.matrix(df_chr)),2] 
 
