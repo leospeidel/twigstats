@@ -12,7 +12,7 @@
 #' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
 #' @param poplabels Filename of poplabels file
 #' @param chrs (Optional) Vector of chromosome IDs
-#' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
+#' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance. If blgsize is negative, every tree is its own block.
 #' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
 #' @param mu (Optional) Per base per generation mutation rate to scale f2 values. Default: 1.25e-8
 #' @param t (Optional) Time cutoff in generations. Default: Inf
@@ -81,6 +81,44 @@ f2_blocks_from_Relate <- function(file_anc, file_mut, poplabels, file_map = NULL
 #' @export
 f2_blocks_from_RelateAges <- function(pref, file_mut, blgsize = NULL, transitions = NULL, maxmiss = NULL, fam = NULL, pops = NULL, chrs = NULL, tmin = NULL, t = NULL, include_undated = NULL, minMAF = NULL, apply_corr = NULL, debug_mode = 0L) {
     .Call(`_twigstats_f2_blocks_from_RelateAges`, pref, file_mut, blgsize, transitions, maxmiss, fam, pops, chrs, tmin, t, include_undated, minMAF, apply_corr, debug_mode)
+}
+
+#' Function to calculate Fst from Relate trees for pairs of populations specified in poplabels.
+#'
+#' This function will calculate f2 statistics in blocks of prespecified size for all pairs of populations specified in the poplabels file.
+#' Please refer to the Relate documentation for input file formats (https://myersgroup.github.io/relate/).
+#' The output is in a format that is directly accepted by the admixtools R package to calculate 
+#' f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtools/).
+#'
+#' @param file_anc Filename of anc file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+#' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+#' @param poplabels Filename of poplabels file
+#' @param chrs (Optional) Vector of chromosome IDs
+#' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance. If blgsize is negative, every tree is its own block.
+#' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
+#' @param mu (Optional) Per base per generation mutation rate to scale f2 values. Default: 1.25e-8
+#' @param t (Optional) Time cutoff in generations. Default: Inf
+#' @param tmin (Optional) Minimum time cutof in generations. Any lineages younger than tmin will be excluded from the analysis. Default: t = 0.
+#' @param minMAF (Optional) Minimum frequency cutoff. Default: 1 (i.e. excl singletons)
+#' @param use_muts (Optional) Calculate traditional f2 statistics by only using mutations mapped to Relate trees. Default: false.
+#' @param transitions (Optional) Set this to FALSE to exclude transition SNPs. Only meaningful with use_muts
+#' @param apply_corr (Optional) Use small sample size correction. Default: true.
+#' @param dump_blockpos (Optional) Filename of blockpos file.
+#' @return 3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.
+#' @examples
+#' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
+#' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
+#' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
+#' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
+#'
+#' #Calculate f2s between all pairs of populations
+#' Fst_blocks <- Fst_blocks_from_Relate(file_anc, file_mut, poplabels, file_map)
+#'
+#' #Use a cutoff of 500 generations
+#' Fst_blocks <- Fst_blocks_from_Relate(file_anc, file_mut, poplabels, file_map, dump_blockpos = "test.pos", t = 500)
+#' @export
+Fst_blocks_from_Relate <- function(file_anc, file_mut, poplabels, file_map = NULL, chrs = NULL, blgsize = NULL, mu = NULL, tmin = NULL, t = NULL, transitions = NULL, use_muts = NULL, minMAF = NULL, Fst = NULL, dump_blockpos = NULL, apply_corr = NULL) {
+    .Call(`_twigstats_Fst_blocks_from_Relate`, file_anc, file_mut, poplabels, file_map, chrs, blgsize, mu, tmin, t, transitions, use_muts, minMAF, Fst, dump_blockpos, apply_corr)
 }
 
 #' Chromosome painting using genealogies.
