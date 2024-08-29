@@ -12,7 +12,7 @@ library(dplyr)
 #' @param poplabels Filename of poplabels file
 #' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 1 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
 #' @param t (Optional) Time cutoff in generations. Default: Inf
-#' @param use_muts (Optional) If TRUE, use mutation rate in calculations. Default: FALSE 
+#' @param use_muts (Optional) Calculate traditional f2 statistics by only using mutations mapped to Relate trees. Default: False.
 #' @param Fst (Optional) If TRUE, compute Fst. Default: FALSE
 #' @return Returns a data frame with Fst or f2 values.
 #' @examples
@@ -29,11 +29,11 @@ library(dplyr)
 #'			   poplabels = poplabels,
 #'			   file_map = file_map,
 #'			   file_out = "test",
-#'			   blgsize = 10000, #optional
-#'			   use_muts = F,    #optional
-#'			   t = t,           #optional
-#'         Fst = T          #optional
-#'       )
+#'			   blgsize = 10000,  #optional
+#'			   use_muts = FALSE, #optional
+#'			   t = 1000,	       #optional
+#'			   Fst = TRUE	       #optional
+#'	 )
 #'
 #' print(head(df))
 #' @export 
@@ -42,6 +42,17 @@ TwigScan <- function(file_anc, file_mut, poplabels, file_map, file_out, blgsize 
 	if(Fst){
 
 		f2_blocks <- Fst_blocks_from_Relate(file_anc = file_anc,
+																				file_mut = file_mut,
+																				poplabels = poplabels,
+																				blgsize = blgsize,
+																				file_map = file_map,
+																				dump_blockpos = paste0(file_out,'_t',t,'.pos'),
+																				use_muts = use_muts,
+																				t = t)
+
+	}else{
+
+		f2_blocks <- f2_blocks_from_Relate(file_anc = file_anc,
 																			 file_mut = file_mut,
 																			 poplabels = poplabels,
 																			 blgsize = blgsize,
@@ -50,32 +61,21 @@ TwigScan <- function(file_anc, file_mut, poplabels, file_map, file_out, blgsize 
 																			 use_muts = use_muts,
 																			 t = t)
 
-	}else{
-
-		f2_blocks <- f2_blocks_from_Relate(file_anc = file_anc,
-																		 file_mut = file_mut,
-																		 poplabels = poplabels,
-																		 blgsize = blgsize,
-																		 file_map = file_map,
-																		 dump_blockpos = paste0(file_out,'_t',t,'.pos'),
-																		 use_muts = use_muts,
-																		 t = t)
-
 	}
 
 	pos <- read.table(paste0(file_out,'_t',t,'.pos'))
-  names <- dimnames(f2_blocks)[[1]]
+	names <- dimnames(f2_blocks)[[1]]
 
-  df <- data.frame()
+	df <- data.frame()
 	for(i in 1:length(names)){
-    for(j in i:length(names)){
-      if(i != j){
+		for(j in i:length(names)){
+			if(i != j){
 				df <- rbind(df, data.frame(block = pos[,1], pos = pos[,2], val = f2_blocks[i,j,], pop1 = names[i], pop2 = names[j], cutoff = t, use_muts = use_muts))
 			}
 		}
 	}
 
-  df %>% filter(val > -Inf, val < Inf) %>% group_by(pop1,pop2) %>% mutate(zval = (val - median(val))/mad(val)) -> df
+	df %>% filter(val > -Inf, val < Inf) %>% group_by(pop1,pop2) %>% mutate(zval = (val - median(val))/mad(val)) -> df
 
 	return(df)
 

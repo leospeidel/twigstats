@@ -31,7 +31,7 @@ TwigScan(
 
 \item{t}{(Optional) Time cutoff in generations. Default: Inf}
 
-\item{use_muts}{(Optional) If TRUE, use mutation rate in calculations. Default: FALSE}
+\item{use_muts}{(Optional) Calculate traditional f2 statistics by only using mutations mapped to Relate trees. Default: False.}
 
 \item{Fst}{(Optional) If TRUE, compute Fst. Default: FALSE}
 }
@@ -55,11 +55,11 @@ df <- TwigScan(file_anc = file_anc,
 		   poplabels = poplabels,
 		   file_map = file_map,
 		   file_out = "test",
-		   blgsize = 10000, #optional
-		   use_muts = F,    #optional
-		   t = t,           #optional
-        Fst = T          #optional
-      )
+		   blgsize = 10000,  #optional
+		   use_muts = FALSE, #optional
+		   t = 1000,	       #optional
+		   Fst = TRUE	       #optional
+ )
 
 print(head(df))
 }

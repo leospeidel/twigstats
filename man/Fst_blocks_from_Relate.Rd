@@ -33,7 +33,7 @@ Fst_blocks_from_Relate(
 
 \item{chrs}{(Optional) Vector of chromosome IDs}
 
-\item{blgsize}{(Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance. If blgsize is negative, every tree is its own block.}
+\item{blgsize}{(Optional) SNP block size. Default is 10000 bases. If blgsize is <100 then it will be interpreted in Morgan. If blgsize is 100 or greater, if will be interpreted as base pair distance. If blgsize is negative, every tree is its own block.}
 
 \item{mu}{(Optional) Per base per generation mutation rate to scale f2 values. Default: 1.25e-8}
 
@@ -55,10 +55,9 @@ Fst_blocks_from_Relate(
 3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.
 }
 \description{
-This function will calculate f2 statistics in blocks of prespecified size for all pairs of populations specified in the poplabels file.
+This function will calculate Fst in blocks of prespecified size for all pairs of populations specified in the poplabels file.
 Please refer to the Relate documentation for input file formats (https://myersgroup.github.io/relate/).
-The output is in a format that is directly accepted by the admixtools R package to calculate
-f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtools/).
+The output is in the same format as for f2_blocks_from_Relate.
 }
 \examples{
 file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")

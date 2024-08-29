@@ -1204,16 +1204,15 @@ NumericVector f2_blocks_from_RelateAges( SEXP pref, SEXP file_mut, Nullable<doub
 
 //' Function to calculate Fst from Relate trees for pairs of populations specified in poplabels.
 //'
-//' This function will calculate f2 statistics in blocks of prespecified size for all pairs of populations specified in the poplabels file.
+//' This function will calculate Fst in blocks of prespecified size for all pairs of populations specified in the poplabels file.
 //' Please refer to the Relate documentation for input file formats (https://myersgroup.github.io/relate/).
-//' The output is in a format that is directly accepted by the admixtools R package to calculate 
-//' f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtools/).
+//' The output is in the same format as for f2_blocks_from_Relate. 
 //'
 //' @param file_anc Filename of anc file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
 //' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
 //' @param poplabels Filename of poplabels file
 //' @param chrs (Optional) Vector of chromosome IDs
-//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance. If blgsize is negative, every tree is its own block.
+//' @param blgsize (Optional) SNP block size. Default is 10000 bases. If blgsize is <100 then it will be interpreted in Morgan. If blgsize is 100 or greater, if will be interpreted as base pair distance. If blgsize is negative, every tree is its own block.
 //' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
 //' @param mu (Optional) Per base per generation mutation rate to scale f2 values. Default: 1.25e-8
 //' @param t (Optional) Time cutoff in generations. Default: Inf
@@ -1263,7 +1262,7 @@ NumericVector Fst_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabe
 	if(mu.isNotNull()){
 		mu_ = as<double>(mu);
 	}
-	double binsize_ = 0.05;
+	double binsize_ = 10000;
 	if(blgsize.isNotNull()){
 		binsize_ = as<double>(blgsize);
 	}
@@ -1412,7 +1411,6 @@ NumericVector Fst_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabe
 
 					arma::cube::slice_iterator it_c1 = Fstnum_block.begin_slice(blockID), it_c2 = Fstdenom_block.begin_slice(blockID);
 					for(; it_c1 != Fstnum_block.end_slice(blockID);){
-						assert(*it_c2 > 0);
 						*it_c1 /= *it_c2;
 					  it_c1++;
 						it_c2++;
@@ -1528,7 +1526,6 @@ NumericVector Fst_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabe
 		if((int)std::round(num_infSNPs) > 0){
 					arma::cube::slice_iterator it_c1 = Fstnum_block.begin_slice(blockID), it_c2 = Fstdenom_block.begin_slice(blockID);
 					for(; it_c1 != Fstnum_block.end_slice(blockID);){
-						assert(*it_c2 > 0);
 						*it_c1 /= *it_c2;
 					  it_c1++;
 						it_c2++;
