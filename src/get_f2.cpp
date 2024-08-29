@@ -172,6 +172,155 @@ traversef2(const Node& n, const Sample& sample, std::vector<float>& freqs, arma:
 }
 
 void
+traverseFst(const Node& n, const Sample& sample, std::vector<float>& freqs, arma::mat& Fstnum, arma::mat& Fstdenom, float factor, std::vector<float>& coords, bool correct, double time_cutoff = std::numeric_limits<double>::infinity(), double min_cutoff = 0, double minfreq = 1){
+	double overlap = 1.0;
+	if(coords[n.label] > time_cutoff){
+		overlap = 0.0;
+	}else if(n.parent != NULL){
+		if(coords[(*n.parent).label] < min_cutoff){
+			overlap = 0.0; 
+		}else if(coords[(*n.parent).label] > time_cutoff && coords[n.label] < min_cutoff){
+			overlap = (time_cutoff - min_cutoff)/(coords[(*n.parent).label] - coords[n.label]);
+		}else if(coords[(*n.parent).label] > time_cutoff && coords[(*n.parent).label] > coords[n.label]){
+			overlap = (time_cutoff - coords[n.label])/(coords[(*n.parent).label] - coords[n.label]);
+		}else if(coords[n.label] < min_cutoff && coords[(*n.parent).label] > coords[n.label]){
+			overlap = (coords[(*n.parent).label] - min_cutoff)/(coords[(*n.parent).label] - coords[n.label]);
+		}
+	}
+
+	float a,b,an,bn,f;
+
+	if(n.child_left == NULL){
+
+		if(freqs.size() < sample.groups.size()+1) freqs.resize(sample.groups.size()+1);
+		std::fill(freqs.begin(), freqs.end(), 0.0);
+
+		for(int i = 0; i < sample.groups.size(); i++){
+			if(sample.group_of_haplotype[n.label] == i){
+				freqs[i] = 1.0/sample.group_sizes[i];
+
+				float val, val2;
+				if(1.0 > minfreq){
+					if(correct){
+						a   = freqs[i] * (1.0 - freqs[i])/std::max(sample.group_sizes[i]-1,1); //hA in Nicks 2012 notation
+						an  = a*sample.group_sizes[i];
+						val = overlap*factor*(freqs[i]*freqs[i] - a)*n.branch_length;
+						val2 = val + overlap*factor*an*n.branch_length;
+					}else{
+						a   = freqs[i] * (1.0 - freqs[i])/std::max(sample.group_sizes[i]-1,1); //hA in Nicks 2012 notation
+						an  = a*sample.group_sizes[i];
+						val = overlap*factor*freqs[i]*freqs[i]*n.branch_length;
+						val2 = val + overlap*factor*an*n.branch_length;
+					}
+					for(int j = 0; j < sample.groups.size(); j++){
+						if(i != j){
+							Fstnum(i,j) += val;
+							Fstnum(j,i) += val;
+							Fstdenom(i,j) += val2;
+							Fstdenom(j,i) += val2;
+						}
+					}
+					Fstnum(i,sample.groups.size()) += val;
+					Fstnum(sample.groups.size(),i) += val;
+					Fstdenom(i,sample.groups.size()) += val2;
+					Fstdenom(sample.groups.size(),i) += val2;
+				}
+
+				break;
+			}
+		}
+
+	}else{
+
+		std::vector<float> freqs_tmp(sample.groups.size(),0.0);
+		std::vector<int> zeros(sample.groups.size()), nonzeros(sample.groups.size());
+		int nz = 0, nnz = 0;
+
+		traverseFst((*n.child_left), sample, freqs_tmp, Fstnum, Fstdenom, factor, coords, correct, time_cutoff, min_cutoff, minfreq);
+		freqs = freqs_tmp;
+		std::fill(freqs_tmp.begin(), freqs_tmp.end(), 0.0);
+		traverseFst((*n.child_right), sample, freqs_tmp, Fstnum, Fstdenom, factor, coords, correct, time_cutoff, min_cutoff, minfreq);
+		double total = 0;
+		for(int i = 0; i < freqs.size(); i++){
+			freqs[i] += freqs_tmp[i];
+			if(i < sample.group_sizes.size()) total += freqs[i]*sample.group_sizes[i];
+			if(freqs[i] > 0){
+				nonzeros[nnz] = i;
+				nnz++;
+			}else{
+				zeros[nz] = i;
+				nz++;
+			}
+		}
+
+		if(correct){
+			if(total > minfreq){
+				float k = overlap*factor*n.branch_length;
+				if(k > 0){
+					for(std::vector<int>::iterator itnz = nonzeros.begin(); itnz != std::next(nonzeros.begin(),nnz); itnz++){
+						assert(*itnz < sample.group_sizes.size());
+						f = freqs[*itnz];
+						a = f * (1.0 - f)/std::max(sample.group_sizes[*itnz]-1,1);
+						an = a*sample.group_sizes[*itnz];
+						f = (f*f - a)*k;
+						for(std::vector<int>::iterator itz = zeros.begin(); itz != std::next(zeros.begin(),nz); itz++){
+							Fstnum(*itnz,*itz) += f;
+							Fstnum(*itz,*itnz) += f;
+							Fstdenom(*itnz,*itz) += f + an*k;
+							Fstdenom(*itz,*itnz) += f + an*k;
+						}
+
+						f = freqs[*itnz];
+						for(std::vector<int>::iterator itnz2 = std::next(itnz,1); itnz2 != std::next(nonzeros.begin(),nnz); itnz2++){
+							assert(*itnz2 < sample.group_sizes.size());
+							b = freqs[*itnz2] * (1.0 - freqs[*itnz2])/std::max(sample.group_sizes[*itnz2]-1,1);
+							bn = b*sample.group_sizes[*itnz2];
+							Fstnum(*itnz,*itnz2) += ((f-freqs[*itnz2])*(f-freqs[*itnz2])-a-b)*k;
+							Fstnum(*itnz2,*itnz) += ((f-freqs[*itnz2])*(f-freqs[*itnz2])-a-b)*k;
+							Fstdenom(*itnz,*itnz) += ((f-freqs[*itnz2])*(f-freqs[*itnz2])-a-b)*k + (an+bn)*k;
+							Fstdenom(*itnz,*itnz) += ((f-freqs[*itnz2])*(f-freqs[*itnz2])-a-b)*k + (an+bn)*k;
+						}
+
+
+					}
+
+				}
+			}
+		}else{
+			if(total > minfreq){
+				float k = overlap*factor*n.branch_length;
+				if(k > 0){
+					for(std::vector<int>::iterator itnz = nonzeros.begin(); itnz != std::next(nonzeros.begin(),nnz); itnz++){
+						f = freqs[*itnz];
+						a = f * (1.0 - f)/std::max(sample.group_sizes[*itnz]-1,1);
+						an = a*sample.group_sizes[*itnz];
+						f = f*f*k;
+						for(std::vector<int>::iterator itz = zeros.begin(); itz != std::next(zeros.begin(),nz); itz++){
+							Fstnum(*itnz,*itz) += f;
+							Fstnum(*itz,*itnz) += f;
+							Fstdenom(*itnz,*itz) += f + an*k;
+							Fstdenom(*itz,*itnz) += f + an*k;
+						}
+
+						f = freqs[*itnz];
+						for(std::vector<int>::iterator itnz2 = std::next(itnz,1); itnz2 != std::next(nonzeros.begin(),nnz); itnz2++){
+							b = freqs[*itnz2] * (1.0 - freqs[*itnz2])/std::max(sample.group_sizes[*itnz2]-1,1);
+							bn = b*sample.group_sizes[*itnz2];
+							Fstnum(*itnz,*itnz2) += (f-freqs[*itnz2])*(f-freqs[*itnz2])*k;
+							Fstnum(*itnz2,*itnz) += (f-freqs[*itnz2])*(f-freqs[*itnz2])*k;
+							Fstdenom(*itnz,*itnz) += (f-freqs[*itnz2])*(f-freqs[*itnz2])*k + (an+bn)*k;
+							Fstdenom(*itnz,*itnz) += (f-freqs[*itnz2])*(f-freqs[*itnz2])*k + (an+bn)*k;
+						}
+					}
+				}
+			}
+		}
+
+	}
+
+}
+
+void
 traverseTMRCA(const MarginalTree& mtr, std::vector<Leaves>& desc, arma::mat& f2, float factor, std::vector<float>& coords, float t){
 	
 	float coords_value;
@@ -223,7 +372,7 @@ traverseTMRCAdist(const MarginalTree& mtr, std::vector<Leaves>& desc, std::vecto
 //' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
 //' @param poplabels Filename of poplabels file
 //' @param chrs (Optional) Vector of chromosome IDs
-//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
+//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance. If blgsize is negative, every tree is its own block.
 //' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
 //' @param mu (Optional) Per base per generation mutation rate to scale f2 values. Default: 1.25e-8
 //' @param t (Optional) Time cutoff in generations. Default: Inf
@@ -302,15 +451,15 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 	if(minMAF.isNotNull()){
 		minmafcut = as<int>(minMAF);
 	}
-
 	bool correct = true;
 	if(apply_corr.isNotNull()){
 		correct = as<int>(apply_corr);
 	}
 
-	bool isM = true;
-	if(binsize_ > 100) isM = false;
-	if(isM){
+	int isM = 1;
+	if(binsize_ > 100) isM = 0;
+	if(binsize_ < 0) isM = -1;
+	if(isM == 1){
 		if(map_ == ""){
 			Rcpp::stop("Need to specify recombination map when blgsize < 100");
 		}
@@ -320,9 +469,10 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 	sample.Read(filename_poplabels);
 
 	std::cerr << "Computing pairwise f2 for " << sample.groups.size() + 1 << " groups." << std::endl;
-	std::cerr << "blgsize: " << binsize_;
-	if(isM) std::cerr << "M" << std::endl;
-	if(!isM) std::cerr << "bp" << std::endl;
+	if(isM >= 0) std::cerr << "blgsize: " << binsize_;
+	if(isM == 1) std::cerr << "M" << std::endl;
+	if(isM == 0) std::cerr << "bp" << std::endl;
+	if(isM == -1) std::cerr << "per tree" << std::endl;
 	std::cerr << std::endl;
 
 	MarginalTree mtr; //stores marginal trees. mtr.pos is SNP position at which tree starts, mtr.tree stores the tree
@@ -342,6 +492,10 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 	if(dump_blockpos != R_NilValue){
 		blockBP = true;
 		os.open(as<std::string>(dump_blockpos));
+		if(isM == 1){
+      std::cerr << "Error: dump_blockpos only works for bp distances." << std::endl;
+			exit(1);
+		}
 	}
 
 	for(int chr = 0; chr < filename_anc.size(); chr++){
@@ -384,7 +538,7 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 				std::cerr.flush();
 			}
 
-			if(isM){
+			if(isM == 1){
 				if(recmap.bp[irec] >= (*it_mut).pos){
 					if(irec > 0){
 						rec = ((double)(*it_mut).pos - recmap.bp[irec-1])/(recmap.bp[irec] - recmap.bp[irec-1]) * (recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) + recmap.gen_pos[irec-1];
@@ -411,7 +565,7 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 			}
 
 			//for each tree, calculate f2 stats given sample assignment to pops
-			if( (!isM && (*it_mut).pos - current_pos > binsize_) || (isM && rec/100.0 - current_rec > binsize_) ){
+			if( (isM == -1) || ( (isM == 0) && (*it_mut).pos - current_pos > binsize_) || ( (isM == 1) && rec/100.0 - current_rec > binsize_) ){
 
 				Rcpp::checkUserInterrupt();
 				if((int)std::round(num_infSNPs) > 0){
@@ -427,10 +581,12 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 					f2_block.resize(sample.groups.size()+1, sample.groups.size()+1, size(f2_block)[2] + 1000);
 					splicenames.resize(splicenames.size() + 1000);
 				}
-				if(isM){
+				if(isM == 1){
 					while(rec/100.0 - current_rec > binsize_){
 						current_rec += binsize_; 
 					}
+				}else if(isM == -1){
+          current_pos = (*it_mut).pos;
 				}else{
 					while((*it_mut).pos - current_pos > binsize_){
 						current_pos += binsize_; 
@@ -1045,6 +1201,366 @@ NumericVector f2_blocks_from_RelateAges( SEXP pref, SEXP file_mut, Nullable<doub
 
 }
 
+
+//' Function to calculate Fst from Relate trees for pairs of populations specified in poplabels.
+//'
+//' This function will calculate f2 statistics in blocks of prespecified size for all pairs of populations specified in the poplabels file.
+//' Please refer to the Relate documentation for input file formats (https://myersgroup.github.io/relate/).
+//' The output is in a format that is directly accepted by the admixtools R package to calculate 
+//' f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtools/).
+//'
+//' @param file_anc Filename of anc file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+//' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+//' @param poplabels Filename of poplabels file
+//' @param chrs (Optional) Vector of chromosome IDs
+//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance. If blgsize is negative, every tree is its own block.
+//' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
+//' @param mu (Optional) Per base per generation mutation rate to scale f2 values. Default: 1.25e-8
+//' @param t (Optional) Time cutoff in generations. Default: Inf
+//' @param tmin (Optional) Minimum time cutof in generations. Any lineages younger than tmin will be excluded from the analysis. Default: t = 0.
+//' @param minMAF (Optional) Minimum frequency cutoff. Default: 1 (i.e. excl singletons)
+//' @param use_muts (Optional) Calculate traditional f2 statistics by only using mutations mapped to Relate trees. Default: false.
+//' @param transitions (Optional) Set this to FALSE to exclude transition SNPs. Only meaningful with use_muts
+//' @param apply_corr (Optional) Use small sample size correction. Default: true.
+//' @param dump_blockpos (Optional) Filename of blockpos file.
+//' @return 3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.
+//' @examples
+//' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
+//' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
+//' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
+//' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
+//'
+//' #Calculate f2s between all pairs of populations
+//' Fst_blocks <- Fst_blocks_from_Relate(file_anc, file_mut, poplabels, file_map)
+//'
+//' #Use a cutoff of 500 generations
+//' Fst_blocks <- Fst_blocks_from_Relate(file_anc, file_mut, poplabels, file_map, dump_blockpos = "test.pos", t = 500)
+//' @export
+// [[Rcpp::export]]
+NumericVector Fst_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_map = R_NilValue, Nullable<CharacterVector> chrs = R_NilValue, Nullable<double> blgsize = R_NilValue, Nullable<double> mu = R_NilValue, Nullable<double> tmin = R_NilValue, Nullable<double> t = R_NilValue, Nullable<int> transitions = R_NilValue, Nullable<int> use_muts = R_NilValue, Nullable<int> minMAF = R_NilValue, Nullable<int> Fst = R_NilValue, SEXP dump_blockpos = R_NilValue, Nullable<int> apply_corr = R_NilValue) {
+
+	std::string filename_poplabels = as<std::string>(poplabels);
+	std::vector<std::string> filename_anc, filename_mut, filename_rec;
+	std::string map_ = "";
+	if(file_map != R_NilValue){
+		map_ = as<std::string>(file_map);
+	}
+
+	if(chrs.isNotNull()){
+		CharacterVector chrs_(chrs);
+		for(int i = 0; i < chrs_.size(); i++){
+			filename_anc.push_back( as<std::string>(file_anc) + "_chr" + as<std::string>(chrs_[i]) + ".anc" );
+			filename_mut.push_back( as<std::string>(file_mut) + "_chr" + as<std::string>(chrs_[i]) + ".mut" );
+			filename_rec.push_back( map_ + "_chr" + as<std::string>(chrs_[i]) + ".txt" );
+		}
+	}else{
+		filename_anc.push_back( as<std::string>(file_anc) );
+		filename_mut.push_back( as<std::string>(file_mut) );
+		filename_rec.push_back( map_ );
+	}
+
+	double mu_ = 1.25e-8;
+	if(mu.isNotNull()){
+		mu_ = as<double>(mu);
+	}
+	double binsize_ = 0.05;
+	if(blgsize.isNotNull()){
+		binsize_ = as<double>(blgsize);
+	}
+	bool use_muts_ = false;
+	if(use_muts.isNotNull()){
+		use_muts_ = as<bool>(use_muts);
+	}
+	double t_ = std::numeric_limits<double>::infinity();
+	if(t.isNotNull()){
+		t_ = as<double>(t);
+	}
+	double t_min_ = 0;
+	if(tmin.isNotNull()){
+		t_min_ = as<double>(tmin);
+	}
+	if(t_min_ >= t_){
+		Rcpp::stop("t needs to be greater than tmin");
+	}
+	int transitions_ = 1;
+	if(transitions.isNotNull()){
+		transitions_ = as<int>(transitions);
+	}
+	int minmafcut = 1;
+	if(minMAF.isNotNull()){
+		minmafcut = as<int>(minMAF);
+	}
+	bool correct = true;
+	if(apply_corr.isNotNull()){
+		correct = as<int>(apply_corr);
+	}
+
+	int isM = 1;
+	if(binsize_ > 100) isM = 0;
+	if(binsize_ < 0) isM = -1;
+	if(isM == 1){
+		if(map_ == ""){
+			Rcpp::stop("Need to specify recombination map when blgsize < 100");
+		}
+	}
+
+	Sample sample;
+	sample.Read(filename_poplabels);
+
+	std::cerr << "Computing pairwise Fst for " << sample.groups.size() + 1 << " groups." << std::endl;
+	if(isM >= 0) std::cerr << "blgsize: " << binsize_;
+	if(isM == 1) std::cerr << "M" << std::endl;
+	if(isM == 0) std::cerr << "bp" << std::endl;
+	if(isM == -1) std::cerr << "per tree" << std::endl;
+	std::cerr << std::endl;
+
+	MarginalTree mtr; //stores marginal trees. mtr.pos is SNP position at which tree starts, mtr.tree stores the tree
+	Muts::iterator it_mut; //iterator for mut file
+	float num_bases_tree_persists = 0.0;
+
+	////////// 1. Read one tree at a time /////////
+
+	arma::cube Fstnum_block   = arma::zeros<arma::cube>(sample.groups.size()+1, sample.groups.size()+1, 1000);
+	arma::cube Fstdenom_block = arma::zeros<arma::cube>(sample.groups.size()+1, sample.groups.size()+1, 1000);
+	std::vector<std::string> splicenames(1000);
+	int blockID = 0;
+	float num_infSNPs = 0.0;
+
+	bool blockBP = false;
+	std::ofstream os;
+	if(dump_blockpos != R_NilValue){
+		blockBP = true;
+		os.open(as<std::string>(dump_blockpos));
+		if(isM == 1){
+			std::cerr << "Error: dump_blockpos only works for bp distances." << std::endl;
+			exit(1);
+		}
+	}
+
+	for(int chr = 0; chr < filename_anc.size(); chr++){
+
+		//We open anc file and read one tree at a time. File remains open until all trees have been read OR ancmut.CloseFiles() is called.
+		//The mut file is read once, file is closed after constructor is called.
+		AncMutIterators ancmut(filename_anc[chr], filename_mut[chr]);
+		Data data(ancmut.NumTips(), ancmut.NumSnps());
+
+		map recmap(filename_rec[chr].c_str());
+		int irec = 0;
+
+		if( blockID+100 >= size(Fstnum_block)[2] ){
+			Fstnum_block.resize(sample.groups.size()+1, sample.groups.size()+1, size(Fstnum_block)[3] + 1000);
+			Fstdenom_block.resize(sample.groups.size()+1, sample.groups.size()+1, size(Fstdenom_block)[3] + 1000);
+			splicenames.resize(splicenames.size() + 1000);
+		}
+
+		//mtr stores the marginal tree, it_mut points to the first SNP at which the marginal tree starts.
+		//If marginal tree has no SNPs mapping to it, it_mut points to the first SNP of the following tree that has a SNP mapping to it
+		num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
+
+		std::vector<float> freqs(2, 0.0), coords(2*data.N-1, 0.0);
+		std::vector<Leaves> desc;
+		int current_pos = 0;
+		double current_rec = 0;
+		double rec;
+		double factor = 1.0;
+		int percentage = 0;
+		//iterate through whole file
+		std::cerr << "Block: " << blockID << "\r";
+		while(num_bases_tree_persists >= 0.0){
+
+			mtr.tree.GetCoordinates(coords);
+			mtr.tree.FindAllLeaves(desc);
+
+			if(((*it_mut).tree % (int)(ancmut.NumTrees()/100)) == 0){
+				std::cerr << "Block: " << blockID << ", " << "[" << percentage << "%]\r";
+				Rcpp::checkUserInterrupt();
+				percentage++;
+				std::cerr.flush();
+			}
+
+			if(isM == 1){
+				if(recmap.bp[irec] >= (*it_mut).pos){
+					if(irec > 0){
+						rec = ((double)(*it_mut).pos - recmap.bp[irec-1])/(recmap.bp[irec] - recmap.bp[irec-1]) * (recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) + recmap.gen_pos[irec-1];
+					}else{
+						rec = ((double)(*it_mut).pos)/(recmap.bp[irec]) * (recmap.gen_pos[irec]);         
+					}
+				}else{
+					while( recmap.bp[irec] < (*it_mut).pos ){
+						irec++;
+						if(irec == recmap.bp.size()){
+							irec--;
+							break;
+						}
+					}
+					if(irec == recmap.bp.size()-1){
+						rec = recmap.gen_pos[irec]/recmap.bp[irec] * ((*it_mut).pos - recmap.bp[irec]) + recmap.gen_pos[irec];
+					}else{
+						assert(recmap.bp[irec] >= (*it_mut).pos);
+						assert(irec > 0);
+						rec = ((double)(*it_mut).pos - recmap.bp[irec-1])/(recmap.bp[irec] - recmap.bp[irec-1]) * (recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) + recmap.gen_pos[irec-1];
+					}
+				}
+				assert(rec >= 0.0);
+			}
+
+			//for each tree, calculate Fst given sample assignment to pops
+			if( (isM == -1) || ( (isM == 0) && (*it_mut).pos - current_pos > binsize_) || ( (isM == 1) && rec/100.0 - current_rec > binsize_) ){
+
+				Rcpp::checkUserInterrupt();
+				if((int)std::round(num_infSNPs) > 0){
+
+					arma::cube::slice_iterator it_c1 = Fstnum_block.begin_slice(blockID), it_c2 = Fstdenom_block.begin_slice(blockID);
+					for(; it_c1 != Fstnum_block.end_slice(blockID);){
+						assert(*it_c2 > 0);
+						*it_c1 /= *it_c2;
+					  it_c1++;
+						it_c2++;
+					}
+
+					splicenames[blockID] = "l" + std::to_string((int)std::round(num_infSNPs));
+					num_infSNPs = 0;
+					if(blockBP) os << blockID << " " << current_pos << " " << (*it_mut).pos << "\n";
+					blockID++;
+				}
+				if( blockID+100 >= size(Fstnum_block)[2] ){
+					Fstnum_block.resize(sample.groups.size()+1, sample.groups.size()+1, size(Fstnum_block)[2] + 1000);
+					Fstdenom_block.resize(sample.groups.size()+1, sample.groups.size()+1, size(Fstdenom_block)[2] + 1000);
+					splicenames.resize(splicenames.size() + 1000);
+				}
+				if(isM == 1){
+					while(rec/100.0 - current_rec > binsize_){
+						current_rec += binsize_; 
+					}
+				}else if(isM == -1){
+					current_pos = (*it_mut).pos;
+				}else{
+					while((*it_mut).pos - current_pos > binsize_){
+						current_pos += binsize_; 
+					}
+				}
+
+			}
+
+			if(!use_muts_){
+				factor = mu_ * num_bases_tree_persists;
+
+				double overlap = 1.0;	
+				for(std::vector<Node>::iterator it_node = mtr.tree.nodes.begin(); it_node != mtr.tree.nodes.end(); it_node++){
+					overlap = 1.0;
+					if(coords[(*it_node).label] > t_ || desc[(*it_node).label].num_leaves <= minmafcut){
+						overlap = 0.0;
+					}else if((*it_node).parent != NULL){
+						if(coords[(*(*it_node).parent).label] < t_min_){
+							overlap = 0.0; 
+						}else if(coords[(*(*it_node).parent).label] > t_ && coords[(*it_node).label] < t_min_){
+							overlap = (t_ - t_min_)/(coords[(*(*it_node).parent).label] - coords[(*it_node).label]);
+						}else if(coords[(*(*it_node).parent).label] > t_ && coords[(*(*it_node).parent).label] > coords[(*it_node).label]){
+							overlap = (t_ - coords[(*it_node).label])/(coords[(*(*it_node).parent).label] - coords[(*it_node).label]);
+						}else if(coords[(*it_node).label] < t_min_ && coords[(*(*it_node).parent).label] > coords[(*it_node).label]){
+							overlap = (coords[(*(*it_node).parent).label] - t_min_)/(coords[(*(*it_node).parent).label] - coords[(*it_node).label]);
+						}
+					}else{
+						overlap = 0.0;
+					}
+					num_infSNPs += overlap*(*it_node).branch_length * factor;
+				}
+
+				traverseFst(*std::prev(mtr.tree.nodes.end(),1), sample, freqs, Fstnum_block.slice(blockID), Fstdenom_block.slice(blockID), factor, coords, correct, t_, t_min_, minmafcut);
+			}else{
+
+				for(std::vector<Node>::iterator it_node = mtr.tree.nodes.begin(); it_node != mtr.tree.nodes.end(); it_node++){
+					(*it_node).branch_length = 0.0;
+				}
+
+				int treeID = (*it_mut).tree;
+				while((*it_mut).tree == treeID){
+
+					bool use = ((*it_mut).branch.size() == 1);
+					if(transitions_ == 0 && use){
+						if((*it_mut).mutation_type != "C/A" && (*it_mut).mutation_type != "A/C" &&
+								(*it_mut).mutation_type != "G/C" && (*it_mut).mutation_type != "C/G" &&
+								(*it_mut).mutation_type != "A/T" && (*it_mut).mutation_type != "T/A" &&
+								(*it_mut).mutation_type != "T/G" && (*it_mut).mutation_type != "G/T"
+							){
+							use = false;
+						}
+					}
+
+					if(use){
+						mtr.tree.nodes[(*it_mut).branch[0]].branch_length += 1.0;
+					}
+					it_mut++;
+					if(it_mut == ancmut.mut_end()) break;
+				}
+
+				double overlap = 1.0;
+				for(std::vector<Node>::iterator it_node = mtr.tree.nodes.begin(); it_node != mtr.tree.nodes.end(); it_node++){
+					overlap = 1.0;
+					if(coords[(*it_node).label] > t_ || desc[(*it_node).label].num_leaves <= minmafcut){
+						overlap = 0.0;
+					}else if((*it_node).parent != NULL){
+						if(coords[(*(*it_node).parent).label] < t_min_){
+							overlap = 0.0; 
+						}else if(coords[(*(*it_node).parent).label] > t_ && coords[(*it_node).label] < t_min_){
+							overlap = (t_ - t_min_)/(coords[(*(*it_node).parent).label] - coords[(*it_node).label]);
+						}else if(coords[(*(*it_node).parent).label] > t_ && coords[(*(*it_node).parent).label] > coords[(*it_node).label]){
+							overlap = (t_ - coords[(*it_node).label])/(coords[(*(*it_node).parent).label] - coords[(*it_node).label]);
+						}else if(coords[(*it_node).label] < t_min_ && coords[(*(*it_node).parent).label] > coords[(*it_node).label]){
+							overlap = (coords[(*(*it_node).parent).label] - t_min_)/(coords[(*(*it_node).parent).label] - coords[(*it_node).label]);
+						}
+					}else{
+						overlap = 0.0;
+					}
+
+					assert(overlap >= 0);
+					assert(overlap <= 1.0);
+					num_infSNPs += overlap * (*it_node).branch_length;
+				}
+
+				traverseFst(*std::prev(mtr.tree.nodes.end(),1), sample, freqs, Fstnum_block.slice(blockID), Fstdenom_block.slice(blockID), factor, coords, correct, t_, t_min_, minmafcut);
+
+			}
+
+			num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
+		}
+
+		if((int)std::round(num_infSNPs) > 0){
+					arma::cube::slice_iterator it_c1 = Fstnum_block.begin_slice(blockID), it_c2 = Fstdenom_block.begin_slice(blockID);
+					for(; it_c1 != Fstnum_block.end_slice(blockID);){
+						assert(*it_c2 > 0);
+						*it_c1 /= *it_c2;
+					  it_c1++;
+						it_c2++;
+					}
+					splicenames[blockID] = "l" + std::to_string((int)std::round(num_infSNPs));
+					num_infSNPs = 0;
+					if(blockBP) os << blockID << " " << current_pos << " " << (*it_mut).pos << "\n";
+					blockID++;
+		}
+
+	}
+
+	sample.groups.push_back("Root");
+	Fstnum_block.reshape(sample.groups.size(), sample.groups.size(), blockID);
+	splicenames.resize(blockID);
+
+	NumericVector Fstnum_copy(Dimension(sample.groups.size(), sample.groups.size(), blockID));
+	std::copy(Fstnum_block.begin(), Fstnum_block.end(), Fstnum_copy.begin());
+	CharacterVector dim1 = wrap(sample.groups);
+	CharacterVector dim2 = wrap(splicenames);
+	Fstnum_copy.attr("dimnames") = List::create(dim1, dim1, dim2);
+
+	std::cerr << "Block: " << blockID << ", " << "[100%]\r";
+	std::cerr << std::endl;
+
+	return Fstnum_copy;
+
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //' Chromosome painting using genealogies.
 //'
@@ -1671,6 +2187,8 @@ NumericVector ExpPaintingProfile( SEXP file_anc, SEXP file_mut, SEXP poplabels, 
 
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //' Function to calculates mean TMRCAs from Relate trees for pairs of populations specified in poplabels.
 //'

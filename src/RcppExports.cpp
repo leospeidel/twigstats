@@ -59,6 +59,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Fst_blocks_from_Relate
+NumericVector Fst_blocks_from_Relate(SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_map, Nullable<CharacterVector> chrs, Nullable<double> blgsize, Nullable<double> mu, Nullable<double> tmin, Nullable<double> t, Nullable<int> transitions, Nullable<int> use_muts, Nullable<int> minMAF, Nullable<int> Fst, SEXP dump_blockpos, Nullable<int> apply_corr);
+RcppExport SEXP _twigstats_Fst_blocks_from_Relate(SEXP file_ancSEXP, SEXP file_mutSEXP, SEXP poplabelsSEXP, SEXP file_mapSEXP, SEXP chrsSEXP, SEXP blgsizeSEXP, SEXP muSEXP, SEXP tminSEXP, SEXP tSEXP, SEXP transitionsSEXP, SEXP use_mutsSEXP, SEXP minMAFSEXP, SEXP FstSEXP, SEXP dump_blockposSEXP, SEXP apply_corrSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type file_anc(file_ancSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type file_mut(file_mutSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type poplabels(poplabelsSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type file_map(file_mapSEXP);
+    Rcpp::traits::input_parameter< Nullable<CharacterVector> >::type chrs(chrsSEXP);
+    Rcpp::traits::input_parameter< Nullable<double> >::type blgsize(blgsizeSEXP);
+    Rcpp::traits::input_parameter< Nullable<double> >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< Nullable<double> >::type tmin(tminSEXP);
+    Rcpp::traits::input_parameter< Nullable<double> >::type t(tSEXP);
+    Rcpp::traits::input_parameter< Nullable<int> >::type transitions(transitionsSEXP);
+    Rcpp::traits::input_parameter< Nullable<int> >::type use_muts(use_mutsSEXP);
+    Rcpp::traits::input_parameter< Nullable<int> >::type minMAF(minMAFSEXP);
+    Rcpp::traits::input_parameter< Nullable<int> >::type Fst(FstSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type dump_blockpos(dump_blockposSEXP);
+    Rcpp::traits::input_parameter< Nullable<int> >::type apply_corr(apply_corrSEXP);
+    rcpp_result_gen = Rcpp::wrap(Fst_blocks_from_Relate(file_anc, file_mut, poplabels, file_map, chrs, blgsize, mu, tmin, t, transitions, use_muts, minMAF, Fst, dump_blockpos, apply_corr));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Painting
 void Painting(SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP poplabels, Nullable<double> blgsize, Nullable<StringVector> pops, Nullable<CharacterVector> chrs);
 RcppExport SEXP _twigstats_Painting(SEXP file_ancSEXP, SEXP file_mutSEXP, SEXP file_mapSEXP, SEXP file_outSEXP, SEXP poplabelsSEXP, SEXP blgsizeSEXP, SEXP popsSEXP, SEXP chrsSEXP) {
@@ -132,6 +157,7 @@ RcppExport SEXP run_testthat_tests(SEXP);
 static const R_CallMethodDef CallEntries[] = {
     {"_twigstats_f2_blocks_from_Relate", (DL_FUNC) &_twigstats_f2_blocks_from_Relate, 14},
     {"_twigstats_f2_blocks_from_RelateAges", (DL_FUNC) &_twigstats_f2_blocks_from_RelateAges, 14},
+    {"_twigstats_Fst_blocks_from_Relate", (DL_FUNC) &_twigstats_Fst_blocks_from_Relate, 15},
     {"_twigstats_Painting", (DL_FUNC) &_twigstats_Painting, 8},
     {"_twigstats_ExpPaintingProfile", (DL_FUNC) &_twigstats_ExpPaintingProfile, 5},
     {"_twigstats_TMRCA_from_Relate", (DL_FUNC) &_twigstats_TMRCA_from_Relate, 8},
