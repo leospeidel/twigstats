@@ -12,7 +12,7 @@ f2, f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtool
 
   gtag('config', 'G-P8RP1CGQ1W');
 </script></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -37,7 +37,7 @@ f2, f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtool
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
@@ -50,14 +50,14 @@ f2, f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtool
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/leospeidel/twigstats/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
@@ -95,67 +95,67 @@ f2, f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtool
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>pref</dt>
+
+
+<dl><dt id="arg-pref">pref<a class="anchor" aria-label="anchor" href="#arg-pref"></a></dt>
 <dd><p>Prefix of PLINK binary files, assuming filenames of form ${pref}.bed, ${pref}.bim, ${pref}.fam.</p></dd>
 
 
-<dt>file_mut</dt>
+<dt id="arg-file-mut">file_mut<a class="anchor" aria-label="anchor" href="#arg-file-mut"></a></dt>
 <dd><p>(Optional) Prefix of filenames of mut files, assuming filenames of form ${file_mut}_chr1.mut(.gz). Chromosome names have to be consistent to those in the PLINK files. If no file is specified, all mutations in the PLINK file are used.</p></dd>
 
 
-<dt>blgsize</dt>
+<dt id="arg-blgsize">blgsize<a class="anchor" aria-label="anchor" href="#arg-blgsize"></a></dt>
 <dd><p>(Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.</p></dd>
 
 
-<dt>transitions</dt>
+<dt id="arg-transitions">transitions<a class="anchor" aria-label="anchor" href="#arg-transitions"></a></dt>
 <dd><p>(Optional) Set this to FALSE to exclude transition SNPs</p></dd>
 
 
-<dt>maxmiss</dt>
+<dt id="arg-maxmiss">maxmiss<a class="anchor" aria-label="anchor" href="#arg-maxmiss"></a></dt>
 <dd><p>(Optional) Discard SNPs which are missing in a fraction of populations higher than maxmiss</p></dd>
 
 
-<dt>fam</dt>
+<dt id="arg-fam">fam<a class="anchor" aria-label="anchor" href="#arg-fam"></a></dt>
 <dd><p>(Optional) 1d-array assigning individuals to populations. Corresponds to the first column in the fam file and is useful if you want to change population assignments.</p></dd>
 
 
-<dt>pops</dt>
+<dt id="arg-pops">pops<a class="anchor" aria-label="anchor" href="#arg-pops"></a></dt>
 <dd><p>(Optional) Populations for which data should be extracted. Names need to match the first column in the fam file (or fam option below)</p></dd>
 
 
-<dt>chrs</dt>
+<dt id="arg-chrs">chrs<a class="anchor" aria-label="anchor" href="#arg-chrs"></a></dt>
 <dd><p>(Optional) List chromosome names to use.</p></dd>
 
 
-<dt>tmin</dt>
+<dt id="arg-tmin">tmin<a class="anchor" aria-label="anchor" href="#arg-tmin"></a></dt>
 <dd><p>(Optional) Minimum time cutof in generations. Any mutations younger than tmin will be excluded from the analysis. Default: t = 0.</p></dd>
 
 
-<dt>t</dt>
+<dt id="arg-t">t<a class="anchor" aria-label="anchor" href="#arg-t"></a></dt>
 <dd><p>(Optional) Time cutoff in generations. Any mutations older that t will be excluded from the analysis. Default: t = Inf.</p></dd>
 
 
-<dt>include_undated</dt>
+<dt id="arg-include-undated">include_undated<a class="anchor" aria-label="anchor" href="#arg-include-undated"></a></dt>
 <dd><p>(Optional) Include mutations that are not dated. Default: false.</p></dd>
 
 
-<dt>minMAF</dt>
+<dt id="arg-minmaf">minMAF<a class="anchor" aria-label="anchor" href="#arg-minmaf"></a></dt>
 <dd><p>(Optional) minimum minor allele count. Default: 1.</p></dd>
 
 
-<dt>apply_corr</dt>
+<dt id="arg-apply-corr">apply_corr<a class="anchor" aria-label="anchor" href="#arg-apply-corr"></a></dt>
 <dd><p>(Optional) Use small sample size correction. Default: true.</p></dd>
 
 
-<dt>debug_mode</dt>
+<dt id="arg-debug-mode">debug_mode<a class="anchor" aria-label="anchor" href="#arg-debug-mode"></a></dt>
 <dd><p>(Optional) Prints progress used for debugging.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>3d array of dimension #groups x #groups x #blocks containing f2 statistics. Analogous to output of f2_from_geno in admixtools.</p>
+    <p>3d array of dimension #groups x #groups x #blocks containing f2 statistics. Analogous to output of f2_from_geno in admixtools.</p>
     </div>
 
     <div id="ref-examples">
@@ -192,15 +192,15 @@ f2, f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtool
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

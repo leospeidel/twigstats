@@ -12,7 +12,7 @@ f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtools/).
 
   gtag('config', 'G-P8RP1CGQ1W');
 </script></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -37,7 +37,7 @@ f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtools/).
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
@@ -50,14 +50,14 @@ f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtools/).
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/leospeidel/twigstats/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
@@ -95,67 +95,67 @@ f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtools/).
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>file_anc</dt>
+
+
+<dl><dt id="arg-file-anc">file_anc<a class="anchor" aria-label="anchor" href="#arg-file-anc"></a></dt>
 <dd><p>Filename of anc file. If chrs is specified, this should only be the prefix, resulting in filenames of ${file_anc}_chr${chr}.anc(.gz).</p></dd>
 
 
-<dt>file_mut</dt>
+<dt id="arg-file-mut">file_mut<a class="anchor" aria-label="anchor" href="#arg-file-mut"></a></dt>
 <dd><p>Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of ${file_anc}_chr${chr}.anc(.gz).</p></dd>
 
 
-<dt>poplabels</dt>
+<dt id="arg-poplabels">poplabels<a class="anchor" aria-label="anchor" href="#arg-poplabels"></a></dt>
 <dd><p>Filename of poplabels file</p></dd>
 
 
-<dt>file_map</dt>
+<dt id="arg-file-map">file_map<a class="anchor" aria-label="anchor" href="#arg-file-map"></a></dt>
 <dd><p>(Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize &gt; 100</p></dd>
 
 
-<dt>chrs</dt>
+<dt id="arg-chrs">chrs<a class="anchor" aria-label="anchor" href="#arg-chrs"></a></dt>
 <dd><p>(Optional) Vector of chromosome IDs</p></dd>
 
 
-<dt>blgsize</dt>
-<dd><p>(Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.</p></dd>
+<dt id="arg-blgsize">blgsize<a class="anchor" aria-label="anchor" href="#arg-blgsize"></a></dt>
+<dd><p>(Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance. If blgsize is negative, every tree is its own block.</p></dd>
 
 
-<dt>mu</dt>
+<dt id="arg-mu">mu<a class="anchor" aria-label="anchor" href="#arg-mu"></a></dt>
 <dd><p>(Optional) Per base per generation mutation rate to scale f2 values. Default: 1.25e-8</p></dd>
 
 
-<dt>tmin</dt>
+<dt id="arg-tmin">tmin<a class="anchor" aria-label="anchor" href="#arg-tmin"></a></dt>
 <dd><p>(Optional) Minimum time cutof in generations. Any lineages younger than tmin will be excluded from the analysis. Default: t = 0.</p></dd>
 
 
-<dt>t</dt>
+<dt id="arg-t">t<a class="anchor" aria-label="anchor" href="#arg-t"></a></dt>
 <dd><p>(Optional) Time cutoff in generations. Default: Inf</p></dd>
 
 
-<dt>transitions</dt>
+<dt id="arg-transitions">transitions<a class="anchor" aria-label="anchor" href="#arg-transitions"></a></dt>
 <dd><p>(Optional) Set this to FALSE to exclude transition SNPs. Only meaningful with use_muts</p></dd>
 
 
-<dt>use_muts</dt>
+<dt id="arg-use-muts">use_muts<a class="anchor" aria-label="anchor" href="#arg-use-muts"></a></dt>
 <dd><p>(Optional) Calculate traditional f2 statistics by only using mutations mapped to Relate trees. Default: false.</p></dd>
 
 
-<dt>minMAF</dt>
+<dt id="arg-minmaf">minMAF<a class="anchor" aria-label="anchor" href="#arg-minmaf"></a></dt>
 <dd><p>(Optional) Minimum frequency cutoff. Default: 1 (i.e. excl singletons)</p></dd>
 
 
-<dt>dump_blockpos</dt>
+<dt id="arg-dump-blockpos">dump_blockpos<a class="anchor" aria-label="anchor" href="#arg-dump-blockpos"></a></dt>
 <dd><p>(Optional) Filename of blockpos file.</p></dd>
 
 
-<dt>apply_corr</dt>
+<dt id="arg-apply-corr">apply_corr<a class="anchor" aria-label="anchor" href="#arg-apply-corr"></a></dt>
 <dd><p>(Optional) Use small sample size correction. Default: true.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.</p>
+    <p>3d array of dimension #groups x #groups x #blocks. Analogous to output of f2_from_geno in admixtools.</p>
     </div>
 
     <div id="ref-examples">
@@ -190,15 +190,15 @@ f3, f4, f4ratio, D statistics and more (https://uqrmaie1.github.io/admixtools/).
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

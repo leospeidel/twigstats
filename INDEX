@@ -1,0 +1,15 @@
+f2_blocks_from_Relate   Function to calculate f2 statistics from Relate
+                        trees for pairs of populations specified in
+                        poplabels.
+f2_blocks_from_RelateAges
+                        Function to calculate f2 statistics from plink
+                        files, ascertained using mutation ages in
+                        Relate trees.
+f4_ratio                Function implementing the F4-ratio statistic
+Painting                Chromosome painting using genealogies.
+PaintingNNLS            Function to run an NNLS on genome-wide copying
+                        proportions to estimate admixture proportions.
+PaintingProfile         Function to compute genome-wide copying
+                        proportions.
+theoretical_zscore      Function to compute a theoretical z-score given
+                        source split times and admixture proportions.

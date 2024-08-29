@@ -28,6 +28,10 @@ reference:
       - f4_ratio
       - jackknife
       - theoretical_zscore
+  - title: "TwigScan functions"
+    contents:
+      - TwigScan
+      - Fst_blocks_from_Relate
   - title: "Chromosome painting functions"
     contents:
       - Painting

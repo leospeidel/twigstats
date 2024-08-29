@@ -1,11 +1,10 @@
 pandoc: 3.1.13
-pkgdown: 2.0.9
+pkgdown: 2.1.0
 pkgdown_sha: ~
 articles:
   basic-usage: basic-usage.html
   real-data-example: real-data-example.html
-last_built: 2024-08-06T22:33Z
+last_built: 2024-08-29T20:53Z
 urls:
   reference: https://leospeidel.github.io/twigstats/reference
   article: https://leospeidel.github.io/twigstats/articles
-

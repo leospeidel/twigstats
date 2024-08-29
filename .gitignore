@@ -11,5 +11,9 @@ docs/reference/test_painting.txt
 docs/reference/test_idfile.txt
 docs/reference/test_rec.txt
 docs/reference/test.tmrca
+docs/reference/test.pos
+docs/reference/test_t1000.pos
+test/
+sim/
 vignettes/1000G_aDNA_mask_transv_chr1.anc.gz
 vignettes/1000G_aDNA_mask_transv_chr1.mut.gz

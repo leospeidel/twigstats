@@ -32,7 +32,7 @@ f2_blocks_from_Relate(
 
 \item{chrs}{(Optional) Vector of chromosome IDs}
 
-\item{blgsize}{(Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance.}
+\item{blgsize}{(Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance. If blgsize is negative, every tree is its own block.}
 
 \item{mu}{(Optional) Per base per generation mutation rate to scale f2 values. Default: 1.25e-8}
 
