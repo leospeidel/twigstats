@@ -2657,7 +2657,7 @@ void TMRCAdist_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP f
 			while((*it_mut).tree == tree){
 				num_infSNPs++;
 				it_mut++;
-				if(it_mut == ancmut.mut.end()) break;
+				if(it_mut == ancmut.mut_end()) break;
 			}
 			traverseTMRCAdist(mtr, desc, tmrcas, epochs_, num_bases_tree_persists, coords);
 
