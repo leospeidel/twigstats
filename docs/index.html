@@ -91,9 +91,9 @@
       </header><div class="row">
   <div class="contents col-md-9">
 <div class="section level1">
-<div class="page-header"><h1 id="twigstats">twigstats<a class="anchor" aria-label="anchor" href="#twigstats"></a>
+<div class="page-header"><h1 id="twigstats">Twigstats<a class="anchor" aria-label="anchor" href="#twigstats"></a>
 </h1></div>
-<p>Boost f-statitics power using genealogies. Compatible with <a href="https://uqrmaie1.github.io/admixtools/index.html" class="external-link">admixtools2</a>.<br> Full documentation at <a href="https://leospeidel.github.io/twigstats">leospeidel.github.io/twigstats</a>.<br> Each function is described on this page: <a href="https://leospeidel.github.io/twigstats/reference">leospeidel.github.io/twigstats/reference</a>.</p>
+<p>Boost f-statitics power using genealogies. Compatible with <a href="https://uqrmaie1.github.io/admixtools/index.html" class="external-link">admixtools2</a>.<br> Full documentation at <a href="https://leospeidel.github.io/twigstats">leospeidel.github.io/twigstats</a>.<br> Each function is described on this page: <a href="https://leospeidel.github.io/twigstats/reference">leospeidel.github.io/twigstats/reference</a>.<br> Please see <a href="https://zenodo.org/records/13880459" class="external-link">zenodo.org/records/13880459</a> for scripts to run <b>Relate</b> and <b>Twigstats</b> on your data.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -116,7 +116,17 @@ export R_LIBS_USER="~/R_libs_for_twigstats/"</code></pre>
 <div class="section level2">
 <h2 id="basic-usage">Basic Usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
 </h2>
-<p>Please see <a href="https://leospeidel.github.io/twigstats/articles/basic-usage.html">leospeidel.github.io/twigstats/articles/basic-usage.html</a>.<br> For a small real data example see <a href="https://leospeidel.github.io/twigstats/articles/real-data-example.html">leospeidel.github.io/twigstats/articles/real-data-example.html</a>.</p>
+<ul>
+<li>
+Please see <a href="https://leospeidel.github.io/twigstats/articles/basic-usage.html">leospeidel.github.io/twigstats/articles/basic-usage.html</a>.
+</li>
+<li>
+For a small real data example see <a href="https://leospeidel.github.io/twigstats/articles/real-data-example.html">leospeidel.github.io/twigstats/articles/real-data-example.html</a>.
+</li>
+<li>
+We also provide a detailed example, including scripts that can be repurposed for other datasets, at <a href="https://zenodo.org/records/13880459" class="external-link">zenodo.org/records/13880459</a>. We demonstrate how to prepare the data, run Relate, run Twigstats, infer admixture proportions, and plot an MDS.
+</li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="simulations">Simulations<a class="anchor" aria-label="anchor" href="#simulations"></a>
@@ -127,6 +137,14 @@ export R_LIBS_USER="~/R_libs_for_twigstats/"</code></pre>
 <p>We simulate five populations named PI, PO, P1, P2, and PX, as described in our paper (Speidel et al, 2024). In this simulation PX is admixed between P1 and P2 50 generations ago and these source groups split 250 generations ago.</p>
 <p>The proportion is constrained by a ratio of two f4-statistics f4(PO, PI, PX, P1)/f4(PO, PI, P2, P1). We compute these f-statistics on the genotypes, as conventional, and using Twigstats choosing a cutoff time of 500 generations. We additional compare against a version where we compute f-statistics on variants ascertained using a rare-variant cutoff of 5% MAF, and we compare against an idealised ‘chromosome painting’ approach.</p>
 <p>We find that admixture proportions are inferred accurately and without bias using Twigstats.</p>
+</div>
+<div class="section level2">
+<h2 id="real-data">Real data<a class="anchor" aria-label="anchor" href="#real-data"></a>
+</h2>
+<center>
+<img src="reference/figures/Figure.png" id="id" class="class" width="600" height="300">
+</center>
+<p>We provide a detailed example data set, including ancient genomes from Britain, Ireland, and Scandinavia. We plot an MDS and compute admixture proportions in ‘Anglo-Saxon’ indiviuals in Britain using an f4-ratio statistic. For more details, please see <a href="https://zenodo.org/records/13880459" class="external-link">zenodo.org/records/13880459</a>.</p>
 </div>
 </div>
   </div>

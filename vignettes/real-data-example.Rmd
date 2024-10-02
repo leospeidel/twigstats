@@ -24,7 +24,7 @@ pre[class] {
 }
 ```
 
-The overall process should be <b>straight forward</b>: 
+The overall process should be straight forward: 
 
 1. We first run Relate starting from a phased VCF file
 2. Then we run Twigstats on these inferred trees, using a single R function called ```f2_blocks_from_Relate```. 
@@ -64,16 +64,16 @@ bcftools view -i 'F_MISSING==0.0' -O z -o 1000G_aDNA_filtered_chr1.vcf.gz
 ```
 This usually works well with a small number of samples. 
 
-<b>For larger data sets</b>, this is likely too restrictive. Please note that Relate cannot accept missing data as input, so if you would like to e.g. retain only sites where <2% of genotypes have a posterior <80%, then you will need to first generate a list of BP positions of SNPs to keep:
+<b>For larger data sets</b>, this is likely too restrictive. Please note that Relate cannot accept missing data as input, so if you would like to e.g. retain only sites where <2% of genotypes have a posterior <80%, then you will need to first generate a list of BP positions of SNPs to remove:
 ```
-bcftools view --max-alleles 2 --exclude-types indels 1000G_aDNA_chr1.vcf.gz | 
-bcftools +setGT -- -t q -n . -i'SMPL_MAX(FORMAT/GP)<=0.8' | 
-bcftools view -i 'F_MISSING<=0.02' | 
-bcftools query -f "%CHROM\t%POS\n" > BP_chr1.txt
+bcftools view --max-alleles 2 --exclude-types indels 1000G_aDNA_chr1.vcf.gz |
+	bcftools +setGT -- -t q -n . -i'SMPL_MAX(FORMAT/GP)<=0.8' |
+	bcftools view -i 'F_MISSING>0.02' |
+	bcftools query -f "%CHROM\t%POS\n" > BP_excl_chr${chr}.txt
 ```
 We can then subset the original imputed vcf using bcftools:
 ```
-bcftools view -R BP_chr1.txt 1000G_aDNA_chr1.vcf.gz -O z -o 1000G_aDNA_filtered_chr1.vcf.gz
+bcftools view -T ^BP_excl_chr1.txt 1000G_aDNA_chr1.vcf.gz -O z -o 1000G_aDNA_filtered_chr1.vcf.gz
 ```
 
 Other filtering approaches are also possible, e.g., we can use bcftools to annotate each SNP with an INFO score (see [impute-info](https://samtools.github.io/bcftools/howtos/plugins.html) plugin of bcftools) and require a minimum INFO score for each SNP. This score measures how well a SNP is imputed using surrounding haplotype information. 
@@ -84,7 +84,7 @@ You can download the 1000 Genomes Project accessibility masks from this URL for 
 
 The ancestral genome is available here for [hg37](ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/supporting/ancestral_alignments/) and [hg38](https://ftp.ensembl.org/pub/release-86/fasta/ancestral_alleles/).
 
-These files, and a recombination map for hg37 and hg38, can also be downloaded from [here](https://www.dropbox.com/scl/fi/ocvr7m00f4jhfcytew4fy/Relate_input_files.tar?rlkey=j1kuqbo2hgvgfwmudwao0v0wv&dl=0).
+These files, and a recombination map for hg37 and hg38, can also be downloaded from [here](https://zenodo.org/records/13880459).
 
 #### Subsetting to transversions (optional)
 

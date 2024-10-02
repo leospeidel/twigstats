@@ -109,7 +109,7 @@ pre[class] {
   max-height: 300px;
 }
 </style>
-<p>The overall process should be <b>straight forward</b>:</p>
+<p>The overall process should be straight forward:</p>
 <ol style="list-style-type: decimal">
 <li>We first run Relate starting from a phased VCF file</li>
 <li>Then we run Twigstats on these inferred trees, using a single R
@@ -209,13 +209,13 @@ bcftools view -i 'F_MISSING==0.0' -O z -o 1000G_aDNA_filtered_chr1.vcf.gz</code>
 note that Relate cannot accept missing data as input, so if you would
 like to e.g. retain only sites where &lt;2% of genotypes have a
 posterior &lt;80%, then you will need to first generate a list of BP
-positions of SNPs to keep:</p>
-<pre><code>bcftools view --max-alleles 2 --exclude-types indels 1000G_aDNA_chr1.vcf.gz | 
-bcftools +setGT -- -t q -n . -i'SMPL_MAX(FORMAT/GP)&lt;=0.8' | 
-bcftools view -i 'F_MISSING&lt;=0.02' | 
-bcftools query -f "%CHROM\t%POS\n" &gt; BP_chr1.txt</code></pre>
+positions of SNPs to remove:</p>
+<pre><code>bcftools view --max-alleles 2 --exclude-types indels 1000G_aDNA_chr1.vcf.gz |
+    bcftools +setGT -- -t q -n . -i'SMPL_MAX(FORMAT/GP)&lt;=0.8' |
+    bcftools view -i 'F_MISSING&gt;0.02' |
+    bcftools query -f "%CHROM\t%POS\n" &gt; BP_excl_chr${chr}.txt</code></pre>
 <p>We can then subset the original imputed vcf using bcftools:</p>
-<pre><code>bcftools view -R BP_chr1.txt 1000G_aDNA_chr1.vcf.gz -O z -o 1000G_aDNA_filtered_chr1.vcf.gz</code></pre>
+<pre><code>bcftools view -T ^BP_excl_chr1.txt 1000G_aDNA_chr1.vcf.gz -O z -o 1000G_aDNA_filtered_chr1.vcf.gz</code></pre>
 <p>Other filtering approaches are also possible, e.g., we can use
 bcftools to annotate each SNP with an INFO score (see <a href="https://samtools.github.io/bcftools/howtos/plugins.html" class="external-link">impute-info</a>
 plugin of bcftools) and require a minimum INFO score for each SNP. This
@@ -231,7 +231,7 @@ and <a href="https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_ge
 <p>The ancestral genome is available here for <a href="ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/supporting/ancestral_alignments/">hg37</a>
 and <a href="https://ftp.ensembl.org/pub/release-86/fasta/ancestral_alleles/" class="external-link">hg38</a>.</p>
 <p>These files, and a recombination map for hg37 and hg38, can also be
-downloaded from <a href="https://www.dropbox.com/scl/fi/ocvr7m00f4jhfcytew4fy/Relate_input_files.tar?rlkey=j1kuqbo2hgvgfwmudwao0v0wv&amp;dl=0" class="external-link">here</a>.</p>
+downloaded from <a href="https://zenodo.org/records/13880459" class="external-link">here</a>.</p>
 </div>
 <div class="section level4">
 <h4 id="subsetting-to-transversions-optional">Subsetting to transversions (optional)<a class="anchor" aria-label="anchor" href="#subsetting-to-transversions-optional"></a>
@@ -316,7 +316,7 @@ stored in <code>1000G_auto.coal</code>.</p>
 <span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a><span class="co">#&gt; Parsing data..</span></span>
 <span id="cb8-35"><a href="#cb8-35" tabindex="-1"></a><span class="co">#&gt; Warning: Will use min 0.00019GB of hard disc.</span></span>
-<span id="cb8-36"><a href="#cb8-36" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 2.154786s; Max Memory usage: 55Mb.</span></span>
+<span id="cb8-36"><a href="#cb8-36" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 2.132716s; Max Memory usage: 55Mb.</span></span>
 <span id="cb8-37"><a href="#cb8-37" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb8-38"><a href="#cb8-38" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb8-39"><a href="#cb8-39" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
@@ -330,34 +330,34 @@ stored in <code>1000G_auto.coal</code>.</p>
 <span id="cb8-47"><a href="#cb8-47" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb8-48"><a href="#cb8-48" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb8-49"><a href="#cb8-49" tabindex="-1"></a><span class="co">#&gt; Painting sequences...</span></span>
-<span id="cb8-50"><a href="#cb8-50" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 2.950664s; Max Memory usage: 97Mb.</span></span>
+<span id="cb8-50"><a href="#cb8-50" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 2.944549s; Max Memory usage: 1.2e+02Mb.</span></span>
 <span id="cb8-51"><a href="#cb8-51" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb8-52"><a href="#cb8-52" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb8-53"><a href="#cb8-53" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb8-54"><a href="#cb8-54" tabindex="-1"></a><span class="co">#&gt; Estimating topologies of AncesTrees in sections 0-0...</span></span>
-<span id="cb8-55"><a href="#cb8-55" tabindex="-1"></a><span class="co">#&gt; [0/0]CPU Time spent: 11.187383s; Max Memory usage: 2.2e+03Mb.</span></span>
+<span id="cb8-55"><a href="#cb8-55" tabindex="-1"></a><span class="co">#&gt; [0/0]CPU Time spent: 11.021334s; Max Memory usage: 2.2e+03Mb.</span></span>
 <span id="cb8-56"><a href="#cb8-56" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb8-57"><a href="#cb8-57" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb8-58"><a href="#cb8-58" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb8-59"><a href="#cb8-59" tabindex="-1"></a><span class="co">#&gt; Propagating mutations across AncesTrees...</span></span>
-<span id="cb8-60"><a href="#cb8-60" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 13.762128s; Max Memory usage: 2.2e+03Mb.</span></span>
+<span id="cb8-60"><a href="#cb8-60" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 13.561762s; Max Memory usage: 2.2e+03Mb.</span></span>
 <span id="cb8-61"><a href="#cb8-61" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb8-62"><a href="#cb8-62" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb8-63"><a href="#cb8-63" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb8-64"><a href="#cb8-64" tabindex="-1"></a><span class="co">#&gt; Inferring branch lengths of AncesTrees in sections 0-0...</span></span>
-<span id="cb8-65"><a href="#cb8-65" tabindex="-1"></a><span class="co">#&gt; [0/0]CPU Time spent: 88.100003s; Max Memory usage: 2.2e+03Mb.</span></span>
+<span id="cb8-65"><a href="#cb8-65" tabindex="-1"></a><span class="co">#&gt; [0/0]CPU Time spent: 86.837117s; Max Memory usage: 2.2e+03Mb.</span></span>
 <span id="cb8-66"><a href="#cb8-66" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb8-67"><a href="#cb8-67" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb8-68"><a href="#cb8-68" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb8-69"><a href="#cb8-69" tabindex="-1"></a><span class="co">#&gt; Combining AncesTrees in Sections...</span></span>
-<span id="cb8-70"><a href="#cb8-70" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 89.266641s; Max Memory usage: 2.2e+03Mb.</span></span>
+<span id="cb8-70"><a href="#cb8-70" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 87.989908s; Max Memory usage: 2.2e+03Mb.</span></span>
 <span id="cb8-71"><a href="#cb8-71" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb8-72"><a href="#cb8-72" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb8-73"><a href="#cb8-73" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb8-74"><a href="#cb8-74" tabindex="-1"></a><span class="co">#&gt; Finalizing...</span></span>
 <span id="cb8-75"><a href="#cb8-75" tabindex="-1"></a><span class="co">#&gt; Number of not mapping SNPs: 414</span></span>
 <span id="cb8-76"><a href="#cb8-76" tabindex="-1"></a><span class="co">#&gt; Number of flipped SNPs    : 77</span></span>
-<span id="cb8-77"><a href="#cb8-77" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 91.234569s; Max Memory usage: 2.2e+03Mb.</span></span>
+<span id="cb8-77"><a href="#cb8-77" tabindex="-1"></a><span class="co">#&gt; CPU Time spent: 89.880694s; Max Memory usage: 2.2e+03Mb.</span></span>
 <span id="cb8-78"><a href="#cb8-78" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
 <span id="cb8-79"><a href="#cb8-79" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb8-80"><a href="#cb8-80" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------------------------</span></span>
