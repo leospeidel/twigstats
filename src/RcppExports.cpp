@@ -84,38 +84,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// Painting
-void Painting(SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP poplabels, Nullable<double> blgsize, Nullable<StringVector> pops, Nullable<CharacterVector> chrs);
-RcppExport SEXP _twigstats_Painting(SEXP file_ancSEXP, SEXP file_mutSEXP, SEXP file_mapSEXP, SEXP file_outSEXP, SEXP poplabelsSEXP, SEXP blgsizeSEXP, SEXP popsSEXP, SEXP chrsSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type file_anc(file_ancSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type file_mut(file_mutSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type file_map(file_mapSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type file_out(file_outSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type poplabels(poplabelsSEXP);
-    Rcpp::traits::input_parameter< Nullable<double> >::type blgsize(blgsizeSEXP);
-    Rcpp::traits::input_parameter< Nullable<StringVector> >::type pops(popsSEXP);
-    Rcpp::traits::input_parameter< Nullable<CharacterVector> >::type chrs(chrsSEXP);
-    Painting(file_anc, file_mut, file_map, file_out, poplabels, blgsize, pops, chrs);
-    return R_NilValue;
-END_RCPP
-}
-// ExpPaintingProfile
-NumericVector ExpPaintingProfile(SEXP file_anc, SEXP file_mut, SEXP poplabels, Nullable<StringVector> pops, Nullable<CharacterVector> chrs);
-RcppExport SEXP _twigstats_ExpPaintingProfile(SEXP file_ancSEXP, SEXP file_mutSEXP, SEXP poplabelsSEXP, SEXP popsSEXP, SEXP chrsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type file_anc(file_ancSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type file_mut(file_mutSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type poplabels(poplabelsSEXP);
-    Rcpp::traits::input_parameter< Nullable<StringVector> >::type pops(popsSEXP);
-    Rcpp::traits::input_parameter< Nullable<CharacterVector> >::type chrs(chrsSEXP);
-    rcpp_result_gen = Rcpp::wrap(ExpPaintingProfile(file_anc, file_mut, poplabels, pops, chrs));
-    return rcpp_result_gen;
-END_RCPP
-}
 // TMRCA_from_Relate
 void TMRCA_from_Relate(SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_out, SEXP file_map, Nullable<CharacterVector> chrs, Nullable<double> t, Nullable<double> blgsize);
 RcppExport SEXP _twigstats_TMRCA_from_Relate(SEXP file_ancSEXP, SEXP file_mutSEXP, SEXP poplabelsSEXP, SEXP file_outSEXP, SEXP file_mapSEXP, SEXP chrsSEXP, SEXP tSEXP, SEXP blgsizeSEXP) {
@@ -151,6 +119,53 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// Painting
+void Painting(SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP poplabels, Nullable<double> blgsize, Nullable<StringVector> pops, Nullable<CharacterVector> chrs);
+RcppExport SEXP _twigstats_Painting(SEXP file_ancSEXP, SEXP file_mutSEXP, SEXP file_mapSEXP, SEXP file_outSEXP, SEXP poplabelsSEXP, SEXP blgsizeSEXP, SEXP popsSEXP, SEXP chrsSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type file_anc(file_ancSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type file_mut(file_mutSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type file_map(file_mapSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type file_out(file_outSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type poplabels(poplabelsSEXP);
+    Rcpp::traits::input_parameter< Nullable<double> >::type blgsize(blgsizeSEXP);
+    Rcpp::traits::input_parameter< Nullable<StringVector> >::type pops(popsSEXP);
+    Rcpp::traits::input_parameter< Nullable<CharacterVector> >::type chrs(chrsSEXP);
+    Painting(file_anc, file_mut, file_map, file_out, poplabels, blgsize, pops, chrs);
+    return R_NilValue;
+END_RCPP
+}
+// PaintingProfile
+DataFrame PaintingProfile(std::vector<std::string> filename_painting, std::string filename_idfile, int nboot, int blocksize, bool use_IDs);
+RcppExport SEXP _twigstats_PaintingProfile(SEXP filename_paintingSEXP, SEXP filename_idfileSEXP, SEXP nbootSEXP, SEXP blocksizeSEXP, SEXP use_IDsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type filename_painting(filename_paintingSEXP);
+    Rcpp::traits::input_parameter< std::string >::type filename_idfile(filename_idfileSEXP);
+    Rcpp::traits::input_parameter< int >::type nboot(nbootSEXP);
+    Rcpp::traits::input_parameter< int >::type blocksize(blocksizeSEXP);
+    Rcpp::traits::input_parameter< bool >::type use_IDs(use_IDsSEXP);
+    rcpp_result_gen = Rcpp::wrap(PaintingProfile(filename_painting, filename_idfile, nboot, blocksize, use_IDs));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ExpPaintingProfile
+NumericVector ExpPaintingProfile(SEXP file_anc, SEXP file_mut, SEXP poplabels, Nullable<StringVector> pops, Nullable<CharacterVector> chrs);
+RcppExport SEXP _twigstats_ExpPaintingProfile(SEXP file_ancSEXP, SEXP file_mutSEXP, SEXP poplabelsSEXP, SEXP popsSEXP, SEXP chrsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type file_anc(file_ancSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type file_mut(file_mutSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type poplabels(poplabelsSEXP);
+    Rcpp::traits::input_parameter< Nullable<StringVector> >::type pops(popsSEXP);
+    Rcpp::traits::input_parameter< Nullable<CharacterVector> >::type chrs(chrsSEXP);
+    rcpp_result_gen = Rcpp::wrap(ExpPaintingProfile(file_anc, file_mut, poplabels, pops, chrs));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 RcppExport SEXP run_testthat_tests(SEXP);
 
@@ -158,10 +173,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_twigstats_f2_blocks_from_Relate", (DL_FUNC) &_twigstats_f2_blocks_from_Relate, 14},
     {"_twigstats_f2_blocks_from_RelateAges", (DL_FUNC) &_twigstats_f2_blocks_from_RelateAges, 14},
     {"_twigstats_Fst_blocks_from_Relate", (DL_FUNC) &_twigstats_Fst_blocks_from_Relate, 15},
-    {"_twigstats_Painting", (DL_FUNC) &_twigstats_Painting, 8},
-    {"_twigstats_ExpPaintingProfile", (DL_FUNC) &_twigstats_ExpPaintingProfile, 5},
     {"_twigstats_TMRCA_from_Relate", (DL_FUNC) &_twigstats_TMRCA_from_Relate, 8},
     {"_twigstats_TMRCAdist_from_Relate", (DL_FUNC) &_twigstats_TMRCAdist_from_Relate, 9},
+    {"_twigstats_Painting", (DL_FUNC) &_twigstats_Painting, 8},
+    {"_twigstats_PaintingProfile", (DL_FUNC) &_twigstats_PaintingProfile, 5},
+    {"_twigstats_ExpPaintingProfile", (DL_FUNC) &_twigstats_ExpPaintingProfile, 5},
     {"run_testthat_tests", (DL_FUNC) &run_testthat_tests, 1},
     {NULL, NULL, 0}
 };

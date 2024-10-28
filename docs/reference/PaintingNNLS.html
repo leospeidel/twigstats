@@ -109,7 +109,7 @@
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#compute the painting profiles with 100 bootstrap samples and a blocksize of 5cM (5000*0.001)</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="PaintingProfile.html">PaintingProfile</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">path</span>,<span class="va">prefix</span>,<span class="st">"_painting.txt.gz"</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">path</span>,<span class="va">prefix</span>,<span class="st">"_idfile.txt.gz"</span><span class="op">)</span>, nboot <span class="op">=</span> <span class="fl">100</span>, blocksize <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [                                                  ] 0%[==================================================] 100%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [==================================================] 100%</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#compute the NNLS to get admixture proportions</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">PaintingNNLS</span><span class="op">(</span><span class="va">df</span>, target_pops <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PX"</span><span class="op">)</span>, source_pops <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"P2"</span>,<span class="st">"P3"</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -123,8 +123,8 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Groups:   target [1]</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   target POP   mean_ancestry sd_ancestry</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> PX     P2            0.263      0.086<span style="text-decoration: underline;">4</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> PX     P3            0.737      0.086<span style="text-decoration: underline;">4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> PX     P2            0.251      0.018<span style="text-decoration: underline;">1</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> PX     P3            0.749      0.018<span style="text-decoration: underline;">1</span></span>
 </code></pre></div>
     </div>
   </div>

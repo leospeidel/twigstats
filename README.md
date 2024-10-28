@@ -24,13 +24,16 @@ library(devtools)
 install()
 ```
 
+#### If you have issues installing the package
+
 Please make sure to have an up-to-date R version (>=3.6.0) and C/C++ compiler (e.g., >=GCC v8) loaded in your environment.
 If you encounter issues, it can help to create a clean R library. Assuming you place this in your home directory, this is done using
 ```
 mkdir ~/R_libs_for_twigstats/
 export R_LIBS_USER="~/R_libs_for_twigstats/"
 ```
-Now, all required R packages will be installed into this fresh R library.
+Now, all R packages will be installed into this fresh R library.
+So please proceed by installing the package as described above.
 
 ## Basic Usage
 
