@@ -20,10 +20,10 @@ library(dplyr)
 #' prefix    <- "test" #prefix of files under path
 #'
 #' #compute the painting profiles with 10 bootstrap samples and a blocksize of 5cM (5000*0.001)
-#' df <- PaintingProfile(c(paste0(path,prefix,"_painting.txt.gz")), paste0(path,prefix,"_idfile.txt.gz"), nboot = 10, blocksize = 5000)
+#' df <- PaintingProfileR(c(paste0(path,prefix,"_painting.txt.gz")), paste0(path,prefix,"_idfile.txt.gz"), nboot = 10, blocksize = 5000)
 #' head(df)
-#' @export
-PaintingProfile <- function(filename_painting, filename_idfile, nboot, blocksize, use_IDs = FALSE){
+#' @keywords internal
+PaintingProfileR <- function(filename_painting, filename_idfile, nboot, blocksize, use_IDs = FALSE){
 
 	if (nboot <= 0) {
 		stop("Value of nboot needs to be at least 1.")
@@ -67,6 +67,9 @@ PaintingProfile <- function(filename_painting, filename_idfile, nboot, blocksize
 		#labs is the group I copied from
 		df_chr <- data.frame(POP = rep(ids[,idcol], each = n), CHR = chr, pos_id = rep(1:n,nrow(ids)), labs = df_chr)
 		df_chr$block <- cut(df_chr$pos_id, breaks = seq(1,n,blocksize))
+		#print("check")
+		#print(length(unique(df_chr$block)))
+		#print("check")
 		df_chr %>% group_by(POP, labs, CHR, block) %>% summarize(count = length(POP)) -> df_chr
 		df <- bind_rows(df, df_chr)
 		rm(df_chr)
@@ -79,6 +82,7 @@ PaintingProfile <- function(filename_painting, filename_idfile, nboot, blocksize
 	if(nboot > 1){
 		df$block <- paste0(df$CHR, "-", df$block)
 		df_sum <- data.frame()
+		#print(head(subset(df, POP == "P1" & labs == "P1")))
 		for(b in 1:nboot){
 			df_sum <- bind_rows(df_sum, df %>% sample_n(size = nrow(df), replace = TRUE) %>% group_by(POP, labs) %>% summarize(prop = sum(count)) %>% group_by(POP) %>% mutate(prop = prop/sum(prop), bootstrap = b))
 		}

@@ -120,64 +120,6 @@ Fst_blocks_from_Relate <- function(file_anc, file_mut, poplabels, file_map = NUL
     .Call(`_twigstats_Fst_blocks_from_Relate`, file_anc, file_mut, poplabels, file_map, chrs, blgsize, mu, tmin, t, transitions, use_muts, minMAF, Fst, dump_blockpos, apply_corr)
 }
 
-#' Chromosome painting using genealogies.
-#'
-#' This function outputs the first coalescence with an individual from a pre-specified group identity along the genome.
-#' If the first such coalescnece involves several copying candidates, a random haplotype is chosen.
-#' Output is in GLOBEtrotter format.
-#'
-#' @param file_anc Filename of anc file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
-#' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
-#' @param file_map File prefix of recombination map.
-#' @param file_out File prefix of output files
-#' @param poplabels Filename of poplabels file
-#' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 1 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
-#' @param pops (Optional) Populations for which data should be extracted. Names need to match the second column of the poplabels file
-#' @param chrs (Optional) Vector of chromosome IDs
-#' @return void. Write three files idfile, paint, rec to disc. 
-#' @examples
-#' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
-#' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
-#' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-#' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
-#'
-#' #define populations to paint against:
-#' pops <- c("P1","P2","P3","P4")
-#'
-#' Painting(file_anc, file_mut, file_map, file_out = "test", poplabels, blgsize = 1e-5)
-#' @export
-Painting <- function(file_anc, file_mut, file_map, file_out, poplabels, blgsize = NULL, pops = NULL, chrs = NULL) {
-    invisible(.Call(`_twigstats_Painting`, file_anc, file_mut, file_map, file_out, poplabels, blgsize, pops, chrs))
-}
-
-#' Function to calculate first coalescence copying vector for each population specified in poplabels file.
-#'
-#' This function calculates the proportion of the genome where the first coalescence is with group x.
-#' It returns a version where coalescence with own group is counted, and one where the own group is excluded.
-#'
-#' @param file_anc Filename of anc file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
-#' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
-#' @param poplabels Filename of poplabels file
-#' @param pops (Optional) Populations for which data should be extracted. Names need to match the second column of the poplabels file
-#' @param chrs (Optional) Vector of chromosome IDs
-#' @return 2d array of dimension #groups x #groups.
-#' @keywords internal
-#' @examples
-#' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
-#' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
-#' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-#'
-#' #Calculate f2s between all pairs of populations
-#' nn_res <- ExpPaintingProfile(file_anc, file_mut, poplabels)
-#' if(require(lsei)){
-#'   pnnls(t(nn_res[c("P2","P3"),c("P1","P2","P3","P4"),1]),(nn_res["PX",c("P1","P2","P3","P4"),1]), sum = 1)$x
-#' }
-#'
-#' @export
-ExpPaintingProfile <- function(file_anc, file_mut, poplabels, pops = NULL, chrs = NULL) {
-    .Call(`_twigstats_ExpPaintingProfile`, file_anc, file_mut, poplabels, pops, chrs)
-}
-
 #' Function to calculates mean TMRCAs from Relate trees for pairs of populations specified in poplabels.
 #'
 #' This function will calculate TMRCAs in blocks of prespecified size for all pairs of populations specified in the poplabels file.
@@ -232,5 +174,87 @@ TMRCA_from_Relate <- function(file_anc, file_mut, poplabels, file_out, file_map 
 #' @export
 TMRCAdist_from_Relate <- function(file_anc, file_mut, poplabels, file_out, epochs, file_map = NULL, chrs = NULL, t = NULL, blgsize = NULL) {
     invisible(.Call(`_twigstats_TMRCAdist_from_Relate`, file_anc, file_mut, poplabels, file_out, epochs, file_map, chrs, t, blgsize))
+}
+
+#' Chromosome painting using genealogies.
+#'
+#' This function outputs the first coalescence with an individual from a pre-specified group identity along the genome.
+#' If the first such coalescnece involves several copying candidates, a random haplotype is chosen.
+#' Output is in GLOBEtrotter format.
+#'
+#' @param file_anc Filename of anc file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+#' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+#' @param file_map File prefix of recombination map.
+#' @param file_out File prefix of output files
+#' @param poplabels Filename of poplabels file
+#' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 1 or greater, if will be interpreted as base pair distance rather than centimorgan distance.
+#' @param pops (Optional) Populations for which data should be extracted. Names need to match the second column of the poplabels file
+#' @param chrs (Optional) Vector of chromosome IDs
+#' @return void. Write three files idfile, paint, rec to disc. 
+#' @examples
+#' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
+#' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
+#' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
+#' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
+#'
+#' #define populations to paint against:
+#' pops <- c("P1","P2","P3","P4")
+#'
+#' Painting(file_anc, file_mut, file_map, file_out = "test", poplabels, blgsize = 1e-5)
+#' @export
+Painting <- function(file_anc, file_mut, file_map, file_out, poplabels, blgsize = NULL, pops = NULL, chrs = NULL) {
+    invisible(.Call(`_twigstats_Painting`, file_anc, file_mut, file_map, file_out, poplabels, blgsize, pops, chrs))
+}
+
+#' Function to compute genome-wide copying proportions.
+#'
+#' This function takes the output of the function Painting and computes the genome-wide 'copying vectors',
+#' i.e., the proportion of the genome copied from each reference population.
+#'
+#' @param filename_painting A vector containing filenames of painting profiles. These are the outputs of Painting.
+#' @param filename_idfile The filename of the idfile, which is an output of Painting.
+#' @param nboot Number of bootstrap samples to generate.
+#' @param blocksize Number of blocks to combine for the bootstrap. For example, if Painting was run with a blgsize of 1e-5 Morgans, blocksize should be 5000 to achieve a blocksize of 5cM.
+#' @param use_IDs If TRUE, compute profiles for each sample. If FALSE (default), compute profiles for each group as specified in the second column of the idfile.
+#' @return A DataFrame with the copying proportions per bootstrap sample.
+#' @examples
+#' # Example usage in R:
+#' path      <- paste0(system.file("test/", package = "twigstats"),"/")
+#' prefix    <- "test" # prefix of files under path
+#' df <- PaintingProfile(c(paste0(path, prefix, "_painting.txt.gz")),
+#'                          paste0(path, prefix, "_idfile.txt.gz"),
+#'                          nboot = 10, blocksize = 5000)
+#' head(df)
+#' @export
+PaintingProfile <- function(filename_painting, filename_idfile, nboot, blocksize, use_IDs = FALSE) {
+    .Call(`_twigstats_PaintingProfile`, filename_painting, filename_idfile, nboot, blocksize, use_IDs)
+}
+
+#' Function to calculate first coalescence copying vector for each population specified in poplabels file.
+#'
+#' This function calculates the proportion of the genome where the first coalescence is with group x.
+#' It returns a version where coalescence with own group is counted, and one where the own group is excluded.
+#'
+#' @param file_anc Filename of anc file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+#' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+#' @param poplabels Filename of poplabels file
+#' @param pops (Optional) Populations for which data should be extracted. Names need to match the second column of the poplabels file
+#' @param chrs (Optional) Vector of chromosome IDs
+#' @return 2d array of dimension #groups x #groups.
+#' @keywords internal
+#' @examples
+#' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
+#' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
+#' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
+#'
+#' #Calculate f2s between all pairs of populations
+#' nn_res <- ExpPaintingProfile(file_anc, file_mut, poplabels)
+#' if(require(lsei)){
+#'   pnnls(t(nn_res[c("P2","P3"),c("P1","P2","P3","P4"),1]),(nn_res["PX",c("P1","P2","P3","P4"),1]), sum = 1)$x
+#' }
+#'
+#' @export
+ExpPaintingProfile <- function(file_anc, file_mut, poplabels, pops = NULL, chrs = NULL) {
+    .Call(`_twigstats_ExpPaintingProfile`, file_anc, file_mut, poplabels, pops, chrs)
 }
 
