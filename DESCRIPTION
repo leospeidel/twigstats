@@ -1,7 +1,7 @@
 Package: twigstats
 Type: Package
 Title: twigstats 
-Version: 1.0.1
+Version: 1.0.2
 Encoding: UTF-8
 Date: 2022-02-02
 Authors@R: as.person(c(
