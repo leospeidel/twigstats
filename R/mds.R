@@ -7,6 +7,7 @@ library(tidyr)
 #'
 #' @param f2_blocks A 3d array of blocked f2 statistics
 #' @return Returns NxN matrix storing f2 statistics between pairs of populations
+#' @keywords internal
 calcf2 <- function(f2_blocks){
 
 	N <- ncol(f2_blocks)
