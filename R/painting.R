@@ -81,10 +81,18 @@ PaintingProfileR <- function(filename_painting, filename_idfile, nboot, blocksiz
 	#now do a single bootstrap on df
 	if(nboot > 1){
 		df$block <- paste0(df$CHR, "-", df$block)
+		unique_blocks <- unique(df$block)
+
 		df_sum <- data.frame()
 		#print(head(subset(df, POP == "P1" & labs == "P1")))
+		print_progress_bar(0, nboot)
 		for(b in 1:nboot){
-			df_sum <- bind_rows(df_sum, df %>% sample_n(size = nrow(df), replace = TRUE) %>% group_by(POP, labs) %>% summarize(prop = sum(count)) %>% group_by(POP) %>% mutate(prop = prop/sum(prop), bootstrap = b))
+			sampled_blocks <- sample(unique_blocks, size = length(unique_blocks), replace = TRUE)
+			df_boot <- bind_rows(lapply(sampled_blocks, function(b) df[df$block == b, ]))
+			df_boot %>% group_by(POP, labs) %>% summarize(prop = sum(count)) %>% group_by(POP) %>% mutate(prop = prop/sum(prop), bootstrap = b) -> df_boot
+			df_sum <- bind_rows(df_sum, df_boot)
+			#df_sum <- bind_rows(df_sum, df %>% sample_n(size = nrow(df), replace = TRUE) %>% group_by(POP, labs) %>% summarize(prop = sum(count)) %>% group_by(POP) %>% mutate(prop = prop/sum(prop), bootstrap = b))
+			print_progress_bar(b, nboot)
 		}
 	}else{
 		df %>% group_by(POP, labs) %>% summarize(prop = sum(count)) %>% group_by(POP) %>% mutate(prop = prop/sum(prop)) -> df_sum

@@ -26,6 +26,7 @@ reference:
       - f2_blocks_from_Relate
       - f2_blocks_from_RelateAges
       - f4_ratio
+      - calc_mds
       - jackknife
       - theoretical_zscore
   - title: "TwigScan functions"
