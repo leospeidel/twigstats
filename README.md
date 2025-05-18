@@ -3,7 +3,7 @@
 Boost f-statitics power using genealogies. Compatible with [admixtools2](https://uqrmaie1.github.io/admixtools/index.html).<br/>
 Full documentation at [leospeidel.github.io/twigstats](https://leospeidel.github.io/twigstats).<br/>
 Each function is described on this page: [leospeidel.github.io/twigstats/reference](https://leospeidel.github.io/twigstats/reference).<br/>
-Please see [zenodo.org/records/13880459](https://zenodo.org/records/13880459) for scripts to run <b>Relate</b> and <b>Twigstats</b> on your data.
+Please see [10.5281/zenodo.13880458](https://doi.org/10.5281/zenodo.13880458) for scripts to run <b>Relate</b> and <b>Twigstats</b> on your data.
 
 ## Installation
 
