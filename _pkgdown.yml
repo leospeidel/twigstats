@@ -25,6 +25,7 @@ reference:
     contents:
       - f2_blocks_from_Relate
       - f2_blocks_from_RelateAges
+      - D_from_Relate
       - f4_ratio
       - calc_mds
       - jackknife

@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   basic-usage: basic-usage.html
   real-data-example: real-data-example.html
-last_built: 2025-05-18T14:54Z
+last_built: 2025-05-21T05:19Z
 urls:
   reference: https://leospeidel.github.io/twigstats/reference
   article: https://leospeidel.github.io/twigstats/articles
