@@ -15,3 +15,4 @@ Returns NxN matrix storing f2 statistics between pairs of populations
 \description{
 This function aggregates f2_blocks to compute a point estimate of f2 genome-wide
 }
+\keyword{internal}

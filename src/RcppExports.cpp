@@ -11,6 +11,32 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// D_from_Relate
+DataFrame D_from_Relate(SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP pop1, SEXP pop2, SEXP pop3, SEXP pop4, SEXP file_map, Nullable<CharacterVector> chrs, Nullable<double> blgsize, Nullable<double> mu, Nullable<double> tmin, Nullable<double> t, Nullable<int> transitions, Nullable<int> use_muts, Nullable<int> minMAF);
+RcppExport SEXP _twigstats_D_from_Relate(SEXP file_ancSEXP, SEXP file_mutSEXP, SEXP poplabelsSEXP, SEXP pop1SEXP, SEXP pop2SEXP, SEXP pop3SEXP, SEXP pop4SEXP, SEXP file_mapSEXP, SEXP chrsSEXP, SEXP blgsizeSEXP, SEXP muSEXP, SEXP tminSEXP, SEXP tSEXP, SEXP transitionsSEXP, SEXP use_mutsSEXP, SEXP minMAFSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type file_anc(file_ancSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type file_mut(file_mutSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type poplabels(poplabelsSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type pop1(pop1SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type pop2(pop2SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type pop3(pop3SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type pop4(pop4SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type file_map(file_mapSEXP);
+    Rcpp::traits::input_parameter< Nullable<CharacterVector> >::type chrs(chrsSEXP);
+    Rcpp::traits::input_parameter< Nullable<double> >::type blgsize(blgsizeSEXP);
+    Rcpp::traits::input_parameter< Nullable<double> >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< Nullable<double> >::type tmin(tminSEXP);
+    Rcpp::traits::input_parameter< Nullable<double> >::type t(tSEXP);
+    Rcpp::traits::input_parameter< Nullable<int> >::type transitions(transitionsSEXP);
+    Rcpp::traits::input_parameter< Nullable<int> >::type use_muts(use_mutsSEXP);
+    Rcpp::traits::input_parameter< Nullable<int> >::type minMAF(minMAFSEXP);
+    rcpp_result_gen = Rcpp::wrap(D_from_Relate(file_anc, file_mut, poplabels, pop1, pop2, pop3, pop4, file_map, chrs, blgsize, mu, tmin, t, transitions, use_muts, minMAF));
+    return rcpp_result_gen;
+END_RCPP
+}
 // f2_blocks_from_Relate
 NumericVector f2_blocks_from_Relate(SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_map, Nullable<CharacterVector> chrs, Nullable<double> blgsize, Nullable<double> mu, Nullable<double> tmin, Nullable<double> t, Nullable<int> transitions, Nullable<int> use_muts, Nullable<int> minMAF, SEXP dump_blockpos, Nullable<int> apply_corr);
 RcppExport SEXP _twigstats_f2_blocks_from_Relate(SEXP file_ancSEXP, SEXP file_mutSEXP, SEXP poplabelsSEXP, SEXP file_mapSEXP, SEXP chrsSEXP, SEXP blgsizeSEXP, SEXP muSEXP, SEXP tminSEXP, SEXP tSEXP, SEXP transitionsSEXP, SEXP use_mutsSEXP, SEXP minMAFSEXP, SEXP dump_blockposSEXP, SEXP apply_corrSEXP) {
@@ -170,6 +196,7 @@ END_RCPP
 RcppExport SEXP run_testthat_tests(SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_twigstats_D_from_Relate", (DL_FUNC) &_twigstats_D_from_Relate, 16},
     {"_twigstats_f2_blocks_from_Relate", (DL_FUNC) &_twigstats_f2_blocks_from_Relate, 14},
     {"_twigstats_f2_blocks_from_RelateAges", (DL_FUNC) &_twigstats_f2_blocks_from_RelateAges, 14},
     {"_twigstats_Fst_blocks_from_Relate", (DL_FUNC) &_twigstats_Fst_blocks_from_Relate, 15},

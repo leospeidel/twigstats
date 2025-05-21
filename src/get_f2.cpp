@@ -360,6 +360,394 @@ traverseTMRCAdist(const MarginalTree& mtr, std::vector<Leaves>& desc, std::vecto
 
 }
 
+void
+traverse_D(const Node& n, const Sample& sample, std::vector<float>& freqs, double& Dnum, double& Ddenom, const std::string& pop1, const std::string& pop2, const std::string& pop3, const std::string& pop4, float factor, std::vector<float>& coords, double time_cutoff = std::numeric_limits<double>::infinity(), double min_cutoff = 0, double minfreq = 1){
+	double overlap = 1.0;
+	if(coords[n.label] > time_cutoff){
+		overlap = 0.0;
+	}else if(n.parent != NULL){
+		if(coords[(*n.parent).label] < min_cutoff){
+			overlap = 0.0; 
+		}else if(coords[(*n.parent).label] > time_cutoff && coords[n.label] < min_cutoff){
+			overlap = (time_cutoff - min_cutoff)/(coords[(*n.parent).label] - coords[n.label]);
+		}else if(coords[(*n.parent).label] > time_cutoff && coords[(*n.parent).label] > coords[n.label]){
+			overlap = (time_cutoff - coords[n.label])/(coords[(*n.parent).label] - coords[n.label]);
+		}else if(coords[n.label] < min_cutoff && coords[(*n.parent).label] > coords[n.label]){
+			overlap = (coords[(*n.parent).label] - min_cutoff)/(coords[(*n.parent).label] - coords[n.label]);
+		}
+	}
+
+	if(n.child_left == NULL){
+
+		if(freqs.size() < 4) freqs.resize(4);
+		std::fill(freqs.begin(), freqs.end(), 0.0);
+		if(sample.groups[sample.group_of_haplotype[n.label]] == pop1){
+			freqs[0] = 1.0/sample.group_sizes[sample.group_of_haplotype[n.label]];
+		}
+		if(sample.groups[sample.group_of_haplotype[n.label]] == pop2){
+			freqs[1] = 1.0/sample.group_sizes[sample.group_of_haplotype[n.label]];
+		}
+		if(sample.groups[sample.group_of_haplotype[n.label]] == pop3){
+			freqs[2] = 1.0/sample.group_sizes[sample.group_of_haplotype[n.label]];
+		}
+		if(sample.groups[sample.group_of_haplotype[n.label]] == pop4){
+			freqs[3] = 1.0/sample.group_sizes[sample.group_of_haplotype[n.label]];
+		}
+
+	}else{
+
+		std::vector<float> freqs_tmp(4,0.0);
+		std::vector<int> zeros(sample.groups.size()), nonzeros(sample.groups.size());
+
+		traverse_D((*n.child_left), sample, freqs_tmp, Dnum, Ddenom, pop1, pop2, pop3, pop4, factor, coords, time_cutoff, min_cutoff, minfreq);
+		freqs = freqs_tmp;
+		std::fill(freqs_tmp.begin(), freqs_tmp.end(), 0.0);
+		traverse_D((*n.child_right), sample, freqs_tmp, Dnum, Ddenom, pop1, pop2, pop3, pop4, factor, coords, time_cutoff, min_cutoff, minfreq);
+		double total = 0;
+		for(int i = 0; i < freqs.size(); i++){
+			freqs[i] += freqs_tmp[i];
+			if(i < sample.group_sizes.size()) total += freqs[i]*sample.group_sizes[i];
+		}
+
+		if(total > minfreq){
+			float k = overlap*factor*n.branch_length;
+			Dnum += k*(freqs[0]-freqs[1])*(freqs[2]-freqs[3]);
+			Ddenom += k*(freqs[0]+freqs[1]-2*freqs[0]*freqs[1])*(freqs[2]+freqs[3]-freqs[2]*freqs[3]);
+	  }
+
+	}
+
+}
+
+
+//' Function to calculate D statistics from Relate trees for pairs of populations specified in poplabels.
+//'
+//' This function will calculate D statistics in blocks of prespecified size for all pairs of populations specified in the poplabels file.
+//' Please refer to the Relate documentation for input file formats (https://myersgroup.github.io/relate/).
+//'
+//' @param file_anc Filename of anc file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+//' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
+//' @param poplabels Filename of poplabels file
+//' @param pop1 Population 1
+//' @param pop2 Population 2
+//' @param pop3 Population 3
+//' @param pop4 Population 4
+//' @param chrs (Optional) Vector of chromosome IDs
+//' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance. If blgsize is negative, every tree is its own block.
+//' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
+//' @param mu (Optional) Per base per generation mutation rate to scale f2 values. Default: 1.25e-8
+//' @param t (Optional) Time cutoff in generations. Default: Inf
+//' @param tmin (Optional) Minimum time cutof in generations. Any lineages younger than tmin will be excluded from the analysis. Default: t = 0.
+//' @param minMAF (Optional) Minimum frequency cutoff. Default: 1 (i.e. excl singletons)
+//' @param use_muts (Optional) Calculate traditional f2 statistics by only using mutations mapped to Relate trees. Default: false.
+//' @param transitions (Optional) Set this to FALSE to exclude transition SNPs. Only meaningful with use_muts
+//' @return Data frame accepted by jackknife function.
+//' @examples
+//' file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "twigstats")
+//' file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
+//' poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
+//' file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats")
+//'
+//' #Calculate f2s between all pairs of populations
+//' D_blocks <- D_from_Relate(file_anc, file_mut, poplabels, "P4", "P3", "P1", "P2", file_map)
+//' print(jackknife(D_blocks))
+//' D_blocks <- D_from_Relate(file_anc, file_mut, poplabels, "P4", "P3", "P1", "PX", file_map)
+//' print(jackknife(D_blocks))
+//' @export
+// [[Rcpp::export]]
+DataFrame D_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP pop1, SEXP pop2, SEXP pop3, SEXP pop4, SEXP file_map = R_NilValue, Nullable<CharacterVector> chrs = R_NilValue, Nullable<double> blgsize = R_NilValue, Nullable<double> mu = R_NilValue, Nullable<double> tmin = R_NilValue, Nullable<double> t = R_NilValue, Nullable<int> transitions = R_NilValue, Nullable<int> use_muts = R_NilValue, Nullable<int> minMAF = R_NilValue) {
+
+	std::string filename_poplabels = as<std::string>(poplabels);
+	std::vector<std::string> filename_anc, filename_mut, filename_rec;
+	std::string map_ = "";
+	if(file_map != R_NilValue){
+		map_ = as<std::string>(file_map);
+	}
+
+	if(chrs.isNotNull()){
+		CharacterVector chrs_(chrs);
+		for(int i = 0; i < chrs_.size(); i++){
+			filename_anc.push_back( as<std::string>(file_anc) + "_chr" + as<std::string>(chrs_[i]) + ".anc" );
+			filename_mut.push_back( as<std::string>(file_mut) + "_chr" + as<std::string>(chrs_[i]) + ".mut" );
+			filename_rec.push_back( map_ + "_chr" + as<std::string>(chrs_[i]) + ".txt" );
+		}
+	}else{
+		filename_anc.push_back( as<std::string>(file_anc) );
+		filename_mut.push_back( as<std::string>(file_mut) );
+		filename_rec.push_back( map_ );
+	}
+
+  std::string pop1_ = as<std::string>(pop1);
+	std::string pop2_ = as<std::string>(pop2);
+	std::string pop3_ = as<std::string>(pop3);
+	std::string pop4_ = as<std::string>(pop4);
+
+	double mu_ = 1.25e-8;
+	if(mu.isNotNull()){
+		mu_ = as<double>(mu);
+	}
+	double binsize_ = 0.05;
+	if(blgsize.isNotNull()){
+		binsize_ = as<double>(blgsize);
+	}
+	bool use_muts_ = false;
+	if(use_muts.isNotNull()){
+		use_muts_ = as<bool>(use_muts);
+	}
+	double t_ = std::numeric_limits<double>::infinity();
+	if(t.isNotNull()){
+		t_ = as<double>(t);
+	}
+	double t_min_ = 0;
+	if(tmin.isNotNull()){
+		t_min_ = as<double>(tmin);
+	}
+	if(t_min_ >= t_){
+		Rcpp::stop("t needs to be greater than tmin");
+	}
+	int transitions_ = 1;
+	if(transitions.isNotNull()){
+		transitions_ = as<int>(transitions);
+	}
+	int minmafcut = 1;
+	if(minMAF.isNotNull()){
+		minmafcut = as<int>(minMAF);
+	}
+
+
+	int isM = 1;
+	if(binsize_ > 100) isM = 0;
+	if(binsize_ < 0) isM = -1;
+	if(isM == 1){
+		if(map_ == ""){
+			Rcpp::stop("Need to specify recombination map when blgsize < 100");
+		}
+	}
+
+	Sample sample;
+	sample.Read(filename_poplabels);
+
+  //make sure the pop1, pop2, pop3, pop4 are in the sample
+	bool found1 = false, found2 = false, found3 = false, found4 = false;
+	for(int i = 0; i < sample.groups.size(); i++){
+		if(sample.groups[i] == pop1_){
+			found1 = true;
+		}
+		if(sample.groups[i] == pop2_){
+			found2 = true;
+		}
+		if(sample.groups[i] == pop3_){
+			found3 = true;
+		}
+		if(sample.groups[i] == pop4_){
+			found4 = true;
+		}
+	}
+
+	if(!found1){
+		Rcpp::stop("Population " + pop1_ + " not found in poplabels.");
+	}
+  if(!found2){
+		Rcpp::stop("Population " + pop2_ + " not found in poplabels.");
+	}
+	if(!found3){
+		Rcpp::stop("Population " + pop3_ + " not found in poplabels.");
+	}
+	if(!found4){
+		Rcpp::stop("Population " + pop4_ + " not found in poplabels.");
+	}
+
+	std::cerr << "Computing D(" << pop1_ << "," << pop2_ << "," << pop3_ << "," << pop4_ << ")." << std::endl;
+	if(isM >= 0) std::cerr << "blgsize: " << binsize_;
+	if(isM == 1) std::cerr << "M" << std::endl;
+	if(isM == 0) std::cerr << "bp" << std::endl;
+	if(isM == -1) std::cerr << "per tree" << std::endl;
+	std::cerr << std::endl;
+
+	MarginalTree mtr; //stores marginal trees. mtr.pos is SNP position at which tree starts, mtr.tree stores the tree
+	Muts::iterator it_mut; //iterator for mut file
+	float num_bases_tree_persists = 0.0;
+	double Dnum = 0, Ddenom = 0;
+
+	////////// 1. Read one tree at a time /////////
+
+	//NumericVector f2_block(Dimension(sample.groups.size(), sample.groups.size(), 10000));
+	std::vector<double> D_num_blocks(1000), D_denom_blocks(1000);
+	int blockID = 0;
+
+	for(int chr = 0; chr < filename_anc.size(); chr++){
+
+		//We open anc file and read one tree at a time. File remains open until all trees have been read OR ancmut.CloseFiles() is called.
+		//The mut file is read once, file is closed after constructor is called.
+		AncMutIterators ancmut(filename_anc[chr], filename_mut[chr]);
+		Data data(ancmut.NumTips(), ancmut.NumSnps());
+
+		map recmap(filename_rec[chr].c_str());
+		int irec = 0;
+
+		if( blockID+100 >= D_num_blocks.size() ){
+			D_num_blocks.resize(D_num_blocks.size() + 1000);
+			D_denom_blocks.resize(D_denom_blocks.size() + 1000);
+		}
+
+		//mtr stores the marginal tree, it_mut points to the first SNP at which the marginal tree starts.
+		//If marginal tree has no SNPs mapping to it, it_mut points to the first SNP of the following tree that has a SNP mapping to it
+		num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
+
+		std::vector<float> freqs(2, 0.0), coords(2*data.N-1, 0.0);
+		std::vector<Leaves> desc;
+		int current_pos = 0;
+		double current_rec = 0;
+		double rec;
+		double factor = 1.0;
+		int percentage = 0;
+		
+		Dnum = 0;
+		Ddenom = 0;
+		//iterate through whole file
+		std::cerr << "Block: " << blockID << "\r";
+		while(num_bases_tree_persists >= 0.0){
+
+			mtr.tree.GetCoordinates(coords);
+			mtr.tree.FindAllLeaves(desc);
+
+			if(((*it_mut).tree % (int)(ancmut.NumTrees()/100)) == 0){
+				std::cerr << "Block: " << blockID << ", " << "[" << percentage << "%]\r";
+				Rcpp::checkUserInterrupt();
+				percentage++;
+				std::cerr.flush();
+			}
+
+			if(isM == 1){
+				if(recmap.bp[irec] >= (*it_mut).pos){
+					if(irec > 0){
+						rec = ((double)(*it_mut).pos - recmap.bp[irec-1])/(recmap.bp[irec] - recmap.bp[irec-1]) * (recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) + recmap.gen_pos[irec-1];
+					}else{
+						rec = ((double)(*it_mut).pos)/(recmap.bp[irec]) * (recmap.gen_pos[irec]);         
+					}
+				}else{
+					while( recmap.bp[irec] < (*it_mut).pos ){
+						irec++;
+						if(irec == recmap.bp.size()){
+							irec--;
+							break;
+						}
+					}
+					if(irec == recmap.bp.size()-1){
+						rec = recmap.gen_pos[irec]/recmap.bp[irec] * ((*it_mut).pos - recmap.bp[irec]) + recmap.gen_pos[irec];
+					}else{
+						assert(recmap.bp[irec] >= (*it_mut).pos);
+						assert(irec > 0);
+						rec = ((double)(*it_mut).pos - recmap.bp[irec-1])/(recmap.bp[irec] - recmap.bp[irec-1]) * (recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) + recmap.gen_pos[irec-1];
+					}
+				}
+				assert(rec >= 0.0);
+			}
+
+			//for each tree, calculate f2 stats given sample assignment to pops
+			if( (isM == -1) || ( (isM == 0) && (*it_mut).pos - current_pos > binsize_) || ( (isM == 1) && rec/100.0 - current_rec > binsize_) ){
+
+				Rcpp::checkUserInterrupt();
+				if(Ddenom > 0){
+				  D_num_blocks[blockID] = Dnum;
+					D_denom_blocks[blockID] = Ddenom;
+					Dnum = 0;
+					Ddenom = 0;
+					blockID++;
+				}
+				if( blockID+100 >= D_num_blocks.size() ){
+		  		D_num_blocks.resize(D_num_blocks.size() + 1000);
+		    	D_denom_blocks.resize(D_denom_blocks.size() + 1000);
+				}
+				if(isM == 1){
+					while(rec/100.0 - current_rec > binsize_){
+						current_rec += binsize_; 
+					}
+				}else if(isM == -1){
+					current_pos = (*it_mut).pos;
+				}else{
+					while((*it_mut).pos - current_pos > binsize_){
+						current_pos += binsize_; 
+					}
+				}
+
+			}
+
+			if(!use_muts_){
+				factor = mu_ * num_bases_tree_persists;
+				traverse_D(*std::prev(mtr.tree.nodes.end(),1), sample, freqs, Dnum, Ddenom, pop1_, pop2_, pop3_, pop4_, factor, coords, t_, t_min_, minmafcut);
+			}else{
+
+				for(std::vector<Node>::iterator it_node = mtr.tree.nodes.begin(); it_node != mtr.tree.nodes.end(); it_node++){
+					(*it_node).branch_length = 0.0;
+				}
+
+				int treeID = (*it_mut).tree;
+				while((*it_mut).tree == treeID){
+
+					bool use = ((*it_mut).branch.size() == 1);
+					if(transitions_ == 0 && use){
+						if((*it_mut).mutation_type != "C/A" && (*it_mut).mutation_type != "A/C" &&
+								(*it_mut).mutation_type != "G/C" && (*it_mut).mutation_type != "C/G" &&
+								(*it_mut).mutation_type != "A/T" && (*it_mut).mutation_type != "T/A" &&
+								(*it_mut).mutation_type != "T/G" && (*it_mut).mutation_type != "G/T"
+							){
+							use = false;
+						}
+					}
+
+					if(use){
+						mtr.tree.nodes[(*it_mut).branch[0]].branch_length += 1.0;
+					}
+					it_mut++;
+					if(it_mut == ancmut.mut_end()) break;
+				}
+
+				traverse_D(*std::prev(mtr.tree.nodes.end(),1), sample, freqs, Dnum, Ddenom, pop1_, pop2_, pop3_, pop4_, factor, coords, t_, t_min_, minmafcut);
+
+			}
+
+			num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
+		}
+
+		if(Ddenom > 0){
+				  D_num_blocks[blockID] = Dnum;
+					D_denom_blocks[blockID] = Ddenom;
+					Dnum = 0;
+					Ddenom = 0;
+					blockID++;
+		}
+
+	}
+
+	//format output
+	std::vector<int> ids(blockID);
+	for(int i = 0; i < blockID; i++){
+		ids[i] = i;
+	}
+
+	Dnum = 0, Ddenom = 0;
+	for(int i = 0; i < blockID; i++){
+		Dnum += D_num_blocks[i];
+		Ddenom += D_denom_blocks[i];
+	}
+	std::vector<double> Dj(blockID), hj(blockID);
+  for(int i = 0; i < blockID; i++){ 
+		Dj[i] = (Dnum - D_num_blocks[i])/(Ddenom - D_denom_blocks[i]);
+		hj[i] = Ddenom/D_denom_blocks[i];
+	}
+
+	std::cerr << "Block: " << blockID << ", " << "[100%]\r";
+	std::cerr << std::endl;
+
+  return DataFrame::create(
+    Named("blockID") = ids,
+    Named("hj") = hj,
+    Named("Dj") = Dj
+  );
+
+}
+
 
 //' Function to calculate f2 statistics from Relate trees for pairs of populations specified in poplabels.
 //'
