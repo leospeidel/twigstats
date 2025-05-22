@@ -46,7 +46,7 @@ file_anc  <- system.file("sim/msprime_ad0.8_split250_1_chr1.anc.gz", package = "
 file_mut  <- system.file("sim/msprime_ad0.8_split250_1_chr1.mut.gz", package = "twigstats")
 #see https://myersgroup.github.io/relate/input_data.html for file formats
 poplabels <- system.file("sim/msprime_ad0.8_split250_1.poplabels", package = "twigstats")
-file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt", package = "twigstats") #recombination map (three column format)
+file_map  <- system.file("sim/genetic_map_combined_b37_chr1.txt.gz", package = "twigstats") #recombination map (three column format)
 ```
 
 We will first calculate f2 statistics as normal without a cutoff.<br/>

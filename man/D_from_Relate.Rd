@@ -30,13 +30,13 @@ D_from_Relate(
 
 \item{poplabels}{Filename of poplabels file}
 
-\item{pop1}{Population 1}
+\item{pop1}{Population 1. Either a population in poplabels or Root.}
 
-\item{pop2}{Population 2}
+\item{pop2}{Population 2. Either a population in poplabels or Root.}
 
-\item{pop3}{Population 3}
+\item{pop3}{Population 3. Either a population in poplabels or Root.}
 
-\item{pop4}{Population 4}
+\item{pop4}{Population 4. Either a population in poplabels or Root.}
 
 \item{file_map}{(Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100}
 
