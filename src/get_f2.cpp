@@ -428,10 +428,10 @@ traverse_D(const Node& n, const Sample& sample, std::vector<float>& freqs, doubl
 //' @param file_anc Filename of anc file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
 //' @param file_mut Filename of mut file. If chrs is specified, this should only be the prefix, resulting in filenames of $\{file_anc\}_chr$\{chr\}.anc(.gz).
 //' @param poplabels Filename of poplabels file
-//' @param pop1 Population 1
-//' @param pop2 Population 2
-//' @param pop3 Population 3
-//' @param pop4 Population 4
+//' @param pop1 Population 1. Either a population in poplabels or Root.
+//' @param pop2 Population 2. Either a population in poplabels or Root.
+//' @param pop3 Population 3. Either a population in poplabels or Root.
+//' @param pop4 Population 4. Either a population in poplabels or Root.
 //' @param chrs (Optional) Vector of chromosome IDs
 //' @param blgsize (Optional) SNP block size in Morgan. Default is 0.05 (5 cM). If blgsize is 100 or greater, if will be interpreted as base pair distance rather than centimorgan distance. If blgsize is negative, every tree is its own block.
 //' @param file_map (Optional) File prefix of recombination map. Not needed if blgsize is given in base-pairs, i.e. blgsize > 100
@@ -552,16 +552,16 @@ DataFrame D_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP pop1
 		}
 	}
 
-	if(!found1){
+	if(!found1 && pop1_ != "Root"){
 		Rcpp::stop("Population " + pop1_ + " not found in poplabels.");
 	}
-  if(!found2){
+	if(!found2 && pop2_ != "Root"){
 		Rcpp::stop("Population " + pop2_ + " not found in poplabels.");
 	}
-	if(!found3){
+	if(!found3 && pop3_ != "Root"){
 		Rcpp::stop("Population " + pop3_ + " not found in poplabels.");
 	}
-	if(!found4){
+	if(!found4 && pop4_ != "Root"){
 		Rcpp::stop("Population " + pop4_ + " not found in poplabels.");
 	}
 
