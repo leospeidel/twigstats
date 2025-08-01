@@ -275,12 +275,12 @@ traverseFst(const Node& n, const Sample& sample, std::vector<float>& freqs, arma
 							assert(*itnz2 < sample.group_sizes.size());
 							b = freqs[*itnz2] * (1.0 - freqs[*itnz2])/std::max(sample.group_sizes[*itnz2]-1,1);
 							bn = b*sample.group_sizes[*itnz2];
+
 							Fstnum(*itnz,*itnz2) += ((f-freqs[*itnz2])*(f-freqs[*itnz2])-a-b)*k;
 							Fstnum(*itnz2,*itnz) += ((f-freqs[*itnz2])*(f-freqs[*itnz2])-a-b)*k;
-							Fstdenom(*itnz,*itnz) += ((f-freqs[*itnz2])*(f-freqs[*itnz2])-a-b)*k + (an+bn)*k;
-							Fstdenom(*itnz,*itnz) += ((f-freqs[*itnz2])*(f-freqs[*itnz2])-a-b)*k + (an+bn)*k;
+							Fstdenom(*itnz,*itnz2) += ((f-freqs[*itnz2])*(f-freqs[*itnz2])-a-b)*k + (an+bn)*k;
+							Fstdenom(*itnz2,*itnz) += ((f-freqs[*itnz2])*(f-freqs[*itnz2])-a-b)*k + (an+bn)*k;
 						}
-
 
 					}
 
@@ -308,8 +308,8 @@ traverseFst(const Node& n, const Sample& sample, std::vector<float>& freqs, arma
 							bn = b*sample.group_sizes[*itnz2];
 							Fstnum(*itnz,*itnz2) += (f-freqs[*itnz2])*(f-freqs[*itnz2])*k;
 							Fstnum(*itnz2,*itnz) += (f-freqs[*itnz2])*(f-freqs[*itnz2])*k;
-							Fstdenom(*itnz,*itnz) += (f-freqs[*itnz2])*(f-freqs[*itnz2])*k + (an+bn)*k;
-							Fstdenom(*itnz,*itnz) += (f-freqs[*itnz2])*(f-freqs[*itnz2])*k + (an+bn)*k;
+							Fstdenom(*itnz,*itnz2) += (f-freqs[*itnz2])*(f-freqs[*itnz2])*k + (an+bn)*k;
+							Fstdenom(*itnz2,*itnz) += (f-freqs[*itnz2])*(f-freqs[*itnz2])*k + (an+bn)*k;
 						}
 					}
 				}
