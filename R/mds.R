@@ -107,9 +107,10 @@ calc_mds <- function(f2_blocks, poplabels, outgroup){
 		select(where(is.numeric)) %>% # retain only numeric columns
 		prcomp(scale = T) 
 	poplabels$POP <- factor(poplabels$POP, levels = n)
-	poplabels <- poplabels[order(poplabels$POP),]
+  poplabels <- subset(poplabels, !is.na(POP))
+  poplabels <- poplabels[order(poplabels$POP),]
 	df_ret <- rbind(df_ret, cbind(data.frame(PC1 = pca$x[,1], PC2 = pca$x[,2], PC3 = pca$x[,3], 
-																					 ID = as.matrix(poplabels$POP[!is.na(poplabels$POP)])), poplabels[,-1], method = "PCA"))
+																					 ID = as.matrix(poplabels$POP)), poplabels[,-1], method = "PCA"))
 
 	cmd_fit <- cmdscale(1-df_wider[,-1], eig = T, k = 2)
 	poplabels$POP <- factor(poplabels$POP, levels = n)

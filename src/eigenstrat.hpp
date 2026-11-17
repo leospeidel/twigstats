@@ -82,6 +82,7 @@ class plink{
     plink(std::string pref);
     ~plink(){
       free(blocks);
+      if(fp_geno != NULL) fclose(fp_geno);
     }
 
     void SetMaxInd(int max_ind){

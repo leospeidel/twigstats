@@ -144,6 +144,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 		//We open anc file and read one tree at a time. File remains open until all trees have been read OR ancmut.CloseFiles() is called.
 		//The mut file is read once, file is closed after constructor is called.
 		AncMutIterators ancmut(filename_anc[chr], filename_mut[chr]);
+		if(sample.group_of_haplotype.size() != ancmut.NumTips()) Rcpp::stop("Number of haplotypes in poplabels (" + std::to_string(sample.group_of_haplotype.size()) + ") does not match number of tips in " + filename_anc[chr] + " (" + std::to_string(ancmut.NumTips()) + ").");
 		Data data(ancmut.NumTips(), ancmut.NumSnps());
 		map recmap(filename_rec[chr].c_str());
 		rec = 0.0;
@@ -176,8 +177,8 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 					break;
 				}
 			}
-			if(irec == recmap.bp.size()-1){
-				genpos = recmap.gen_pos[irec]/recmap.bp[irec] * ((*it_mut).pos - recmap.gen_pos[irec]) + recmap.gen_pos[irec];
+			if(irec == recmap.bp.size()-1 && recmap.bp[irec] < (*it_mut).pos){
+				genpos = recmap.gen_pos[irec]/recmap.bp[irec] * ((*it_mut).pos - recmap.bp[irec]) + recmap.gen_pos[irec];
 			}else{
 				assert(recmap.bp[irec] >= (*it_mut).pos);
 				assert(irec > 0);
@@ -188,10 +189,10 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 
 		//
 		if(isM){
-			current_igenpos = std::ceil(current_genpos/binsize_)-1;
+			current_igenpos = std::floor(current_genpos/binsize_); //first bin boundary strictly after current_genpos
 			//current_genpos  = current_igenpos * binsize_;
 		}else{
-			current_ipos = std::ceil(current_pos/binsize_)-1;
+			current_ipos = std::floor(current_pos/binsize_); //first bin boundary strictly after current_pos
 			//current_pos  = current_igenpos * binsize_;
 		}
 
@@ -201,7 +202,13 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 		//iterate through whole file
 		while(num_bases_tree_persists >= 0.0){
 
-			if(((*it_mut).tree % (int)(ancmut.NumTrees()/100)) == 0){
+			//skip trees without SNPs: it_mut then points to SNPs of a later tree (or mut_end)
+			if(it_mut == ancmut.mut_end() || (*it_mut).tree != ancmut.get_treecount()){
+				num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
+				continue;
+			}
+
+			if(((*it_mut).tree % std::max(1, (int)(ancmut.NumTrees()/100))) == 0){
 				std::cerr << "[" << percentage << "%]\r";
 				Rcpp::checkUserInterrupt();
 				percentage++;
@@ -233,7 +240,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 						break;
 					}
 				}
-				if(irec == recmap.bp.size()-1){
+				if(irec == recmap.bp.size()-1 && recmap.bp[irec] < next_pos){
 					genpos = recmap.gen_pos[irec]/recmap.bp[irec] * (next_pos - recmap.bp[irec]) + recmap.gen_pos[irec];
 				}else{
 					assert(recmap.bp[irec] >= next_pos);
@@ -244,7 +251,8 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 
 			//assume that current_pos and current_genpos are coordinates of last bin
 			//output painting every x bases or x cM
-			if( (!isM && next_pos - current_pos > binsize_) || (isM && genpos - current_genpos > binsize_) ){
+			//use the same expressions as the loops below, so that pos/gpos are never empty due to floating point rounding
+			if( (!isM && (current_ipos+1)*binsize_ <= next_pos) || (isM && (current_igenpos + 1.0)*binsize_ <= genpos) ){
 
 				//get all pos/gpos pairs until next tree
 				std::vector<double> pos, gpos;
@@ -267,7 +275,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 									break;
 								}
 							}
-							if(irec == recmap.bp.size()-1){
+							if(irec == recmap.bp.size()-1 && recmap.bp[irec] < bp){
 								gpos.push_back(recmap.gen_pos[irec]/recmap.bp[irec] * (bp - recmap.bp[irec]) + recmap.gen_pos[irec]);
 							}else{
 								assert(recmap.bp[irec] >= bp);
@@ -296,7 +304,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 									break;
 								}
 							}
-							if(irec == recmap.bp.size()-1){
+							if(irec == recmap.bp.size()-1 && recmap.gen_pos[irec] < gbp){
 								pos.push_back((int)(recmap.bp[irec]/recmap.gen_pos[irec] * (gbp - recmap.gen_pos[irec]) + recmap.bp[irec]));
 							}else{
 								assert(recmap.gen_pos[irec] >= gbp);
@@ -339,6 +347,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 					int group2;
 					if(node == sib) sib = (*mtr.tree.nodes[parent].child_right).label;
 					int nonself;
+					int ind_i = is_haploid ? i : i/2; //haplotypes of the same individual cannot paint each other
 
 					//naive implementation of nearest neighbour 
 					while(mtr.tree.nodes[node].parent != NULL){
@@ -347,7 +356,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 						if(node == sib) sib = (*mtr.tree.nodes[parent].child_right).label;
 						nonself = 0;
 						for(int k = 0; k < desc[sib].member.size(); k++){
-							if(group_used[ sample.group_of_haplotype[desc[sib].member[k]] ] != 0) nonself++;
+							if(group_used[ sample.group_of_haplotype[desc[sib].member[k]] ] != 0 && (is_haploid ? desc[sib].member[k] : desc[sib].member[k]/2) != ind_i) nonself++;
 						}
 						/*
 							 if(pos[0] == 509747 && i == 0){
@@ -370,7 +379,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 							int count = 0;
 							for(int k = 0; k < desc[sib].member.size(); k++){
 								group2 = sample.group_of_haplotype[desc[sib].member[k]];    
-								if( group_used[group2] != 0 ){
+								if( group_used[group2] != 0 && (is_haploid ? desc[sib].member[k] : desc[sib].member[k]/2) != ind_i ){
 									if(count == copyind){
 										//if(pos[0] == 500152) std::cerr << "ind i = " << i << " has " << desc[sib].member[k] << " of group " << group2 << std::endl;
 										for(int j = 0; j < pos.size(); j++){
@@ -394,7 +403,6 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 
 		rec = 0.0;
 		os_rec << current_pos << " " << rec/1e2 << "\n";
-		current_pos = (*it_mut).pos;
 		os_rec.close();
 
 		//output to file
@@ -622,7 +630,7 @@ DataFrame PaintingProfile(std::vector<std::string> filename_painting, std::strin
 		std::getline(infile, line);
 		//std::getline(infile, line);
 
-		int block_id_tmp;
+		int block_id_tmp, block_id_max = block_id - 1;
 		while (std::getline(infile, line)) {
 
 			std::getline(infile, line);
@@ -649,10 +657,11 @@ DataFrame PaintingProfile(std::vector<std::string> filename_painting, std::strin
 
 			}
 
+			block_id_max = std::max(block_id_max, block_id_tmp); //rows can differ in length if a haplotype was not painted in some trees
 			indiv++;
 		}
 
-		block_id = block_id_tmp + 1;
+		block_id = block_id_max + 1;
 		print_progress_bar(chr, filename_painting.size());
 		chr++;
 	}
@@ -781,6 +790,7 @@ NumericVector ExpPaintingProfile( SEXP file_anc, SEXP file_mut, SEXP poplabels, 
 		//We open anc file and read one tree at a time. File remains open until all trees have been read OR ancmut.CloseFiles() is called.
 		//The mut file is read once, file is closed after constructor is called.
 		AncMutIterators ancmut(filename_anc[chr], filename_mut[chr]);
+		if(sample.group_of_haplotype.size() != ancmut.NumTips()) Rcpp::stop("Number of haplotypes in poplabels (" + std::to_string(sample.group_of_haplotype.size()) + ") does not match number of tips in " + filename_anc[chr] + " (" + std::to_string(ancmut.NumTips()) + ").");
 		Data data(ancmut.NumTips(), ancmut.NumSnps());
 
 		//mtr stores the marginal tree, it_mut points to the first SNP at which the marginal tree starts.
@@ -793,7 +803,7 @@ NumericVector ExpPaintingProfile( SEXP file_anc, SEXP file_mut, SEXP poplabels, 
 		//iterate through whole file
 		while(num_bases_tree_persists >= 0.0){
 
-			if(((*it_mut).tree % (int)(ancmut.NumTrees()/100)) == 0){
+			if((ancmut.get_treecount() % std::max(1, (int)(ancmut.NumTrees()/100))) == 0){
 				std::cerr << "[" << percentage << "%]\r";
 				Rcpp::checkUserInterrupt();
 				percentage++;
@@ -866,7 +876,7 @@ NumericVector ExpPaintingProfile( SEXP file_anc, SEXP file_mut, SEXP poplabels, 
 
 	//divide all entries by group size
 	for(int i = 0; i < sample.groups.size(); i++){
-		for(int j = 0; j < pops_.size(); j++){
+		for(int j = 0; j < sample.groups.size(); j++){
 			nn_res(i,j,0) /= (1e6 * sample.group_sizes[i]);
 			nn_res(i,j,1) /= (1e6 * sample.group_sizes[i]);
 		}
