@@ -66,7 +66,7 @@ PaintingProfileR <- function(filename_painting, filename_idfile, nboot, blocksiz
 		#POP is the ID of the population
 		#labs is the group I copied from
 		df_chr <- data.frame(POP = rep(ids[,idcol], each = n), CHR = chr, pos_id = rep(1:n,nrow(ids)), labs = df_chr)
-		df_chr$block <- cut(df_chr$pos_id, breaks = seq(1,n,blocksize))
+		df_chr$block <- cut(df_chr$pos_id, breaks = seq(0, ceiling(n/blocksize)*blocksize, blocksize))
 		#print("check")
 		#print(length(unique(df_chr$block)))
 		#print("check")
@@ -159,13 +159,14 @@ PaintingNNLS <- function(df_sum, target_pops, source_pops = NULL){
 			sources <- t(as.matrix(sources[,-1]))
 			targets <- t(as.matrix(targets[,-1]))
 
-			for(i in 1:length(tpops)){
+			for(i in seq_along(tpops)){
 				res <- rbind(res, data.frame(bootstrap = b, target = tpops[i], POP = pops, ancestry = lsei::pnnls(sources, targets[,i], sum = 1)$x))
 			}
 		}
 	}else{
 		df_sum %>% tidyr::spread(key = "labs", value = "prop") -> mat
 
+		mat[is.na(mat)] <- 0
 		if(is.null(source_pops)){
 			mat %>% filter(!POP %in% target_pops) -> sources
 		}else{
@@ -178,7 +179,7 @@ PaintingNNLS <- function(df_sum, target_pops, source_pops = NULL){
 		sources <- t(as.matrix(sources[,-1]))
 		targets <- t(as.matrix(targets[,-1]))
 
-		for(i in 1:length(tpops)){
+		for(i in seq_along(tpops)){
 			res <- rbind(res, data.frame(target = tpops[i], POP = pops, ancestry = lsei::pnnls(sources, targets[,i], sum = 1)$x))
 		}
 	}

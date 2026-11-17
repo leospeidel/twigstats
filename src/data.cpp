@@ -132,38 +132,44 @@ haps::DumpSNP(std::vector<char>& sequence, int bp, FILE* fp_out){
 ////////////////////////////
 map::map(const char* filename){
 
+  if(filename[0] == '\0') return; //no map needed (e.g. blocks in bp)
+
   mgzip g;
 
   fp = g.open(filename, "r");
   assert(fp);
-  int lines = 0;
-  while(!feof(fp)){
-    if(fgetc(fp) == '\n'){
-      lines++;
+  //skip header line, which needs to have 3 columns (as in Relate)
+  int c, columns = 0;
+  bool in_token = false;
+  while((c = fgetc(fp)) != '\n' && c != EOF){
+    if(c == ' ' || c == '\t' || c == '\r'){
+      in_token = false;
+    }else if(!in_token){
+      in_token = true;
+      columns++;
     }
   }
-  lines--;//don't count the header
-  g.close(fp);
-
-  fp = g.open(filename, "r");
-  assert(fp);
-  //skip header
-  fscanf(fp, "%s", buffer); 
-  fscanf(fp, "%s", buffer); 
-  fscanf(fp, "%s", buffer); 
-
-  bp.resize(lines);
-	recrate.resize(lines);
-  gen_pos.resize(lines);
-
-  float dummy;
-  double fbp;
-  for(int snp = 0; snp < lines; snp++){
-    fscanf(fp, "%lf %lf %lf", &fbp, &recrate[snp], &gen_pos[snp]);
-    bp[snp] = fbp;
+  if(columns != 3){
+    g.close(fp);
+    Rcpp::stop("Expected 3 columns in header of recombination map " + std::string(filename) + ", but got " + std::to_string(columns) + ".");
   }
 
+  double fbp, frecrate, fgen_pos;
+  while(fscanf(fp, "%lf %lf %lf", &fbp, &frecrate, &fgen_pos) == 3){
+    bp.push_back(fbp);
+    recrate.push_back(frecrate);
+    gen_pos.push_back(fgen_pos);
+  }
+  bool complete = feof(fp);
+
   g.close(fp);
+
+  if(!complete){
+    Rcpp::stop("Unexpected format in recombination map " + std::string(filename) + " after " + std::to_string(bp.size()) + " rows. Expected three columns: position rate cM, with one header line.");
+  }
+  if(bp.size() == 0){
+    Rcpp::stop("Recombination map " + std::string(filename) + " is empty.");
+  }
 
 }
 

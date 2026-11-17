@@ -16,10 +16,16 @@ Tree::ReadTree(const char* line, int N){
 
   while(num_node < 2*N-1){
 
-    sscanf(&line[i], "%d:(%lf %f %d %d)", &parent, &(*it_node).branch_length, &(*it_node).num_events, &(*it_node).SNP_begin, &(*it_node).SNP_end); 
+    if(sscanf(&line[i], "%d:(%lf %f %d %d)", &parent, &(*it_node).branch_length, &(*it_node).num_events, &(*it_node).SNP_begin, &(*it_node).SNP_end) != 5){
+      Rcpp::stop("Malformed tree in anc file.");
+    }
+    if(parent < -1 || parent >= 2*N-1){
+      Rcpp::stop("Invalid parent index in anc file.");
+    }
 
-    while(line[i] != ')' && line[i] != '\n') i++;
-    i += 2;
+    while(line[i] != ')' && line[i] != '\n' && line[i] != '\0') i++;
+    if(line[i] != '\0') i++;
+    if(line[i] != '\0') i++;
 
     if(parent != -1){
       p_parent   = &nodes[parent];
@@ -27,8 +33,10 @@ Tree::ReadTree(const char* line, int N){
       (*it_node).label          = num_node;
       if((*p_parent).child_left == NULL){
         (*p_parent).child_left  = &(*it_node);
-      }else{
+      }else if((*p_parent).child_right == NULL){
         (*p_parent).child_right = &(*it_node);       
+      }else{
+        Rcpp::stop("Tree in anc file is not binary.");
       }
     }else{
       (*it_node).parent         = NULL;
@@ -493,13 +501,17 @@ void
 MarginalTree::Read(const std::string& line, int N){
 
   int i = 0;
-  while(line[i] != ':'){
+  while(i < line.size() && line[i] != ':'){
     i++;
+  }
+  if(i + 2 > line.size()){
+    Rcpp::stop("Malformed tree line in anc file.");
   }
   i += 2;
 
   sscanf(line.c_str(), "%d: ", &pos);
   tree.ReadTree(&(line.c_str())[i], N);
+  tree.sample_ages = NULL; //trees read without sample ages must not point to ages of a previous file
 
 }
 
@@ -507,8 +519,11 @@ void
 MarginalTree::Read(const std::string& line, int N, std::vector<double>& sample_ages){
 
   int i = 0;
-  while(line[i] != ':'){
+  while(i < line.size() && line[i] != ':'){
     i++;
+  }
+  if(i + 2 > line.size()){
+    Rcpp::stop("Malformed tree line in anc file.");
   }
   i += 2;
 

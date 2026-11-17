@@ -1,4 +1,5 @@
 #include "sample.hpp"
+#include <sstream>
 
 void
 Sample::Read(const std::string& filename){
@@ -11,21 +12,16 @@ Sample::Read(const std::string& filename){
   //Read all possible labels
   igzstream is(filename);
   getline(is, line);
+  bool has_haploid = false, has_diploid = false;
+  std::string id, region;
   while(getline(is, line)){
 
-    int i = 0;
-		read.clear();
-		while(line[i] != ' ' && line[i] != '\t'){
-			read += line[i];
-			i++;
-		}
-		ind.push_back(read);
-    i++;
-    read.clear();
-    while(line[i] != ' ' && line[i] != '\t'){
-      read += line[i];
-      i++;
-    }
+    //fields are separated by any whitespace (this also handles CRLF line endings)
+    std::istringstream fields(line);
+    id.clear(); read.clear(); region.clear(); ploidy.clear();
+    fields >> id >> read >> region >> ploidy;
+    if(id.empty()) continue; //skip empty lines
+		ind.push_back(id);
 
     exists = false;
     for(std::vector<std::string>::iterator it_groups = groups.begin(); it_groups != groups.end(); it_groups++){
@@ -36,40 +32,22 @@ Sample::Read(const std::string& filename){
     }
     if(!exists){
       groups.push_back(read);
-      read.clear();
-      i++;
-      while(line[i] != ' ' && line[i] != '\t'){
-        read += line[i];
-        i++;
-      }
-
-      region_of_group[*std::prev(groups.end(),1)] = read;
-    }else{
-      i++;
-      while(line[i] != ' ' && line[i] != '\t'){
-        i++;
-      }
+      region_of_group[*std::prev(groups.end(),1)] = region;
     }
-		i++;
-		ploidy.clear();
-		while(line[i] != ' ' && line[i] != '\t'){
-			ploidy += line[i];
-			i++;
-			if(i == line.size()) break;
-		}
-		i++;
-		if(ploidy != "NA"){
-      if(ploidy == "1"){
-				diploid = false;
-			}else{
-        if(!diploid){
-          Rcpp::stop( "Error: Detected both haploid and diploid samples." );
-				}
-			}
+
+		//as in Relate: 1 means haploid, NA is ignored, anything else means diploid
+		if(ploidy == "1"){
+			has_haploid = true;
+		}else if(ploidy != "NA" && !ploidy.empty()){
+			has_diploid = true;
 		}
 
   }
   is.close();
+	if(has_haploid && has_diploid){
+		Rcpp::stop( "Error: Detected both haploid and diploid samples." );
+	}
+	diploid = !has_haploid;
   std::sort(groups.begin(), groups.end());
 
   //read group_of_haplotype
@@ -81,14 +59,10 @@ Sample::Read(const std::string& filename){
   int ind;
   while(getline(is, line)){
 
-    int i = 0;
-    while(line[i] != ' ' && line[i] != '\t') i++;
-    i++;
-    read.clear();
-    while(line[i] != ' ' && line[i] != '\t'){
-      read += line[i];
-      i++;
-    }
+    std::istringstream fields(line);
+    id.clear(); read.clear();
+    fields >> id >> read;
+    if(id.empty()) continue; //skip empty lines
 
     ind = 0;
     for(std::vector<std::string>::iterator it_groups = groups.begin(); it_groups != groups.end(); it_groups++){

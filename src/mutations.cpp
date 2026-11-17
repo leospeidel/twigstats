@@ -72,11 +72,13 @@ Mutations::Read(igzstream& is){
   int i = 0;
   while(getline(is, line)){ 
 
+    if(!line.empty() && line.back() == '\r') line.pop_back(); //CRLF line endings
+    if(line.empty()) continue; //skip empty lines
     i = 0;
 
     //snp-id
     inread.clear();
-    while(line[i] != ';'){
+    while(i < line.size() && line[i] != ';'){
       inread += line[i];
       i++;
     }
@@ -92,7 +94,7 @@ Mutations::Read(igzstream& is){
 
     //pos_of_snp
     inread.clear();
-    while(line[i] != ';'){
+    while(i < line.size() && line[i] != ';'){
       inread += line[i];
       i++;
     }
@@ -108,7 +110,7 @@ Mutations::Read(igzstream& is){
     //dist_to_next_snp
 
     inread.clear();
-    while(line[i] != ';'){
+    while(i < line.size() && line[i] != ';'){
       inread += line[i];
       i++;
     }
@@ -124,7 +126,7 @@ Mutations::Read(igzstream& is){
 
     //rs-id
     inread.clear();
-    while(line[i] != ';'){
+    while(i < line.size() && line[i] != ';'){
       inread += line[i];
       i++;
     }
@@ -132,7 +134,7 @@ Mutations::Read(igzstream& is){
     info[snp].rs_id = inread;
 
     inread.clear();
-    while(line[i] != ';'){
+    while(i < line.size() && line[i] != ';'){
       inread += line[i];
       i++;
     }
@@ -148,7 +150,7 @@ Mutations::Read(igzstream& is){
 
     do{
       i++;
-      while(line[i] != ' ' && line[i] != ';'){
+      while(i < line.size() && line[i] != ' ' && line[i] != ';'){
         inread += line[i];
         i++;
       }
@@ -163,12 +165,12 @@ Mutations::Read(igzstream& is){
         }
         inread.clear();
       }
-    }while(line[i] != ';');
+    }while(i < line.size() && line[i] != ';');
 
     i++;
-    while(line[i] != ';') i++;
+    while(i < line.size() && line[i] != ';') i++;
     i++;
-    while(line[i] != ';'){
+    while(i < line.size() && line[i] != ';'){
       inread += line[i];
       i++;
     } 
@@ -183,19 +185,33 @@ Mutations::Read(igzstream& is){
     inread.clear();
     i++;
 
-    while(line[i] != ';'){
+    while(i < line.size() && line[i] != ';'){
       inread += line[i];
       i++;
     } 
-    info[snp].age_begin = std::stof(inread);
+    try{
+      info[snp].age_begin = std::stof(inread);
+    }
+    catch(...){
+      std::cerr << "Error reading following line in mut file:" << std::endl;
+      std::cerr << line << std::endl;
+      Rcpp::stop("Error");
+    }
     inread.clear();
     i++;
 
-    while(line[i] != ';'){
+    while(i < line.size() && line[i] != ';'){
       inread += line[i];
       i++;
     } 
-    info[snp].age_end = std::stof(inread);
+    try{
+      info[snp].age_end = std::stof(inread);
+    }
+    catch(...){
+      std::cerr << "Error reading following line in mut file:" << std::endl;
+      std::cerr << line << std::endl;
+      Rcpp::stop("Error");
+    }
     inread.clear();
     i++;
 
@@ -210,14 +226,14 @@ Mutations::Read(igzstream& is){
       i++;
       if(i < line.size()){
         inread.clear();
-        while(line[i] != ';'){
+        while(i < line.size() && line[i] != ';'){
           inread += line[i];
           i++;
         } 
         info[snp].upstream_base = inread;
         i++;
         inread.clear();
-        while(line[i] != ';'){
+        while(i < line.size() && line[i] != ';'){
           inread += line[i];
           i++;
         } 
@@ -373,6 +389,9 @@ AncMutIterators::AncMutIterators(const std::string& filename_anc, const std::str
   is_header >> num_trees;
 
   mut.Read(filename_mut);
+  if(mut.info.size() == 0){
+    Rcpp::stop( "No SNPs in mut file " + filename_mut + "(.gz)");
+  }
   pit_mut           = mut.info.begin();
   tree_index_in_mut = (*pit_mut).tree;
   tree_index_in_anc = -1;
@@ -429,6 +448,9 @@ AncMutIterators::AncMutIterators(const std::string& filename_anc, const std::str
   is_header >> num_trees;
 
   mut.Read(filename_mut);
+  if(mut.info.size() == 0){
+    Rcpp::stop( "No SNPs in mut file " + filename_mut + "(.gz)");
+  }
   pit_mut           = mut.info.begin();
   tree_index_in_mut = (*pit_mut).tree;
   tree_index_in_anc = -1;
@@ -503,6 +525,9 @@ AncMutIterators::OpenFiles(const std::string& i_filename_anc, const std::string&
   is_header >> num_trees;
 
   mut.Read(filename_mut);
+  if(mut.info.size() == 0){
+    Rcpp::stop( "No SNPs in mut file " + filename_mut + "(.gz)");
+  }
   pit_mut           = mut.info.begin();
   tree_index_in_mut = (*pit_mut).tree;
   tree_index_in_anc = -1;
@@ -567,6 +592,9 @@ AncMutIterators::OpenFiles(const std::string& i_filename_anc, const std::string&
   is_header >> num_trees;
 
   mut.Read(filename_mut);
+  if(mut.info.size() == 0){
+    Rcpp::stop( "No SNPs in mut file " + filename_mut + "(.gz)");
+  }
   pit_mut           = mut.info.begin();
   tree_index_in_mut = (*pit_mut).tree;
   tree_index_in_anc = -1;
@@ -606,8 +634,9 @@ AncMutIterators::NextTree(MarginalTree& mtr, Muts::iterator& it_mut, int mode){
   if(tree_index_in_anc + 1 == num_trees){
     return(-1.0); //signals that we reached last tree
   }
-	getline(is, line);
-  //assert(getline(is, line));
+  if(!getline(is, line)){
+    Rcpp::stop( "Unexpected end of anc file " + filename_anc + ". Is the file truncated?" );
+  }
 
   //read marginal tree
   if(sample_ages.size() > 0){

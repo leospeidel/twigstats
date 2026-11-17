@@ -17,6 +17,9 @@ using namespace Rcpp;
 int findInterval(const std::vector<float>& boundaries, float value) {
     auto it = std::lower_bound(boundaries.begin(), boundaries.end(), value);
     
+    if (it == boundaries.begin() && value == *it) {
+        return 0; // Value equals the first boundary
+    }
     if (it == boundaries.begin()) {
         // Value is less than the first boundary
 			  std::cerr << "Epoch out of bounds on the lower side" << std::endl;
@@ -349,6 +352,7 @@ traverseTMRCAdist(const MarginalTree& mtr, std::vector<Leaves>& desc, std::vecto
 
 		coords_value = coords[(*it_node).label];
 		ep = findInterval(epochs, coords_value);
+		if(ep < 0) continue; //node is younger than first epoch
 
 		for(int i = 0; i < desc[(*(*it_node).child_left).label].member.size(); i++){
 			for(int j = 0; j < desc[(*(*it_node).child_right).label].member.size(); j++){
@@ -361,7 +365,7 @@ traverseTMRCAdist(const MarginalTree& mtr, std::vector<Leaves>& desc, std::vecto
 }
 
 void
-traverse_D(const Node& n, const Sample& sample, std::vector<float>& freqs, double& Dnum, double& Ddenom, const std::string& pop1, const std::string& pop2, const std::string& pop3, const std::string& pop4, float factor, std::vector<float>& coords, double time_cutoff = std::numeric_limits<double>::infinity(), double min_cutoff = 0, double minfreq = 1){
+traverse_D(const Node& n, const Sample& sample, std::vector<float>& freqs, double& Dnum, double& Ddenom, const std::string& pop1, const std::string& pop2, const std::string& pop3, const std::string& pop4, const std::vector<double>& popsizes, float factor, std::vector<float>& coords, double time_cutoff = std::numeric_limits<double>::infinity(), double min_cutoff = 0, double minfreq = 1){
 	double overlap = 1.0;
 	if(coords[n.label] > time_cutoff){
 		overlap = 0.0;
@@ -399,14 +403,14 @@ traverse_D(const Node& n, const Sample& sample, std::vector<float>& freqs, doubl
 		std::vector<float> freqs_tmp(4,0.0);
 		std::vector<int> zeros(sample.groups.size()), nonzeros(sample.groups.size());
 
-		traverse_D((*n.child_left), sample, freqs_tmp, Dnum, Ddenom, pop1, pop2, pop3, pop4, factor, coords, time_cutoff, min_cutoff, minfreq);
+		traverse_D((*n.child_left), sample, freqs_tmp, Dnum, Ddenom, pop1, pop2, pop3, pop4, popsizes, factor, coords, time_cutoff, min_cutoff, minfreq);
 		freqs = freqs_tmp;
 		std::fill(freqs_tmp.begin(), freqs_tmp.end(), 0.0);
-		traverse_D((*n.child_right), sample, freqs_tmp, Dnum, Ddenom, pop1, pop2, pop3, pop4, factor, coords, time_cutoff, min_cutoff, minfreq);
+		traverse_D((*n.child_right), sample, freqs_tmp, Dnum, Ddenom, pop1, pop2, pop3, pop4, popsizes, factor, coords, time_cutoff, min_cutoff, minfreq);
 		double total = 0;
 		for(int i = 0; i < freqs.size(); i++){
 			freqs[i] += freqs_tmp[i];
-			if(i < sample.group_sizes.size()) total += freqs[i]*sample.group_sizes[i];
+			total += freqs[i]*popsizes[i]; //number of derived copies in pop1-pop4
 		}
 
 		if(total > minfreq){
@@ -524,6 +528,7 @@ DataFrame D_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP pop1
 
 
 	int isM = 1;
+	if(binsize_ == 0) Rcpp::stop("blgsize cannot be 0.");
 	if(binsize_ > 100) isM = 0;
 	if(binsize_ < 0) isM = -1;
 	if(isM == 1){
@@ -537,18 +542,23 @@ DataFrame D_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP pop1
 
   //make sure the pop1, pop2, pop3, pop4 are in the sample
 	bool found1 = false, found2 = false, found3 = false, found4 = false;
+	std::vector<double> popsizes(4, 0.0); //number of haplotypes in pop1-pop4 (0 for Root)
 	for(int i = 0; i < sample.groups.size(); i++){
 		if(sample.groups[i] == pop1_){
 			found1 = true;
+			popsizes[0] = sample.group_sizes[i];
 		}
 		if(sample.groups[i] == pop2_){
 			found2 = true;
+			popsizes[1] = sample.group_sizes[i];
 		}
 		if(sample.groups[i] == pop3_){
 			found3 = true;
+			popsizes[2] = sample.group_sizes[i];
 		}
 		if(sample.groups[i] == pop4_){
 			found4 = true;
+			popsizes[3] = sample.group_sizes[i];
 		}
 	}
 
@@ -588,9 +598,10 @@ DataFrame D_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP pop1
 		//We open anc file and read one tree at a time. File remains open until all trees have been read OR ancmut.CloseFiles() is called.
 		//The mut file is read once, file is closed after constructor is called.
 		AncMutIterators ancmut(filename_anc[chr], filename_mut[chr]);
+		if(sample.group_of_haplotype.size() != ancmut.NumTips()) Rcpp::stop("Number of haplotypes in poplabels (" + std::to_string(sample.group_of_haplotype.size()) + ") does not match number of tips in " + filename_anc[chr] + " (" + std::to_string(ancmut.NumTips()) + ").");
 		Data data(ancmut.NumTips(), ancmut.NumSnps());
 
-		map recmap(filename_rec[chr].c_str());
+		map recmap(isM == 1 ? filename_rec[chr].c_str() : ""); //map only needed for blocks in Morgan
 		int irec = 0;
 
 		if( blockID+100 >= D_num_blocks.size() ){
@@ -616,10 +627,16 @@ DataFrame D_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP pop1
 		std::cerr << "Block: " << blockID << "\r";
 		while(num_bases_tree_persists >= 0.0){
 
+			//skip trees without SNPs: it_mut then points to SNPs of a later tree (or mut_end)
+			if(it_mut == ancmut.mut_end() || (*it_mut).tree != ancmut.get_treecount()){
+				num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
+				continue;
+			}
+
 			mtr.tree.GetCoordinates(coords);
 			mtr.tree.FindAllLeaves(desc);
 
-			if(((*it_mut).tree % (int)(ancmut.NumTrees()/100)) == 0){
+			if(((*it_mut).tree % std::max(1, (int)(ancmut.NumTrees()/100))) == 0){
 				std::cerr << "Block: " << blockID << ", " << "[" << percentage << "%]\r";
 				Rcpp::checkUserInterrupt();
 				percentage++;
@@ -631,7 +648,7 @@ DataFrame D_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP pop1
 					if(irec > 0){
 						rec = ((double)(*it_mut).pos - recmap.bp[irec-1])/(recmap.bp[irec] - recmap.bp[irec-1]) * (recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) + recmap.gen_pos[irec-1];
 					}else{
-						rec = ((double)(*it_mut).pos)/(recmap.bp[irec]) * (recmap.gen_pos[irec]);         
+						rec = ((double)(*it_mut).pos)/(recmap.bp[irec]) * (recmap.gen_pos[irec]);
 					}
 				}else{
 					while( recmap.bp[irec] < (*it_mut).pos ){
@@ -641,7 +658,7 @@ DataFrame D_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP pop1
 							break;
 						}
 					}
-					if(irec == recmap.bp.size()-1){
+					if(irec == recmap.bp.size()-1 && recmap.bp[irec] < (*it_mut).pos){
 						rec = recmap.gen_pos[irec]/recmap.bp[irec] * ((*it_mut).pos - recmap.bp[irec]) + recmap.gen_pos[irec];
 					}else{
 						assert(recmap.bp[irec] >= (*it_mut).pos);
@@ -683,7 +700,7 @@ DataFrame D_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP pop1
 
 			if(!use_muts_){
 				factor = mu_ * num_bases_tree_persists;
-				traverse_D(*std::prev(mtr.tree.nodes.end(),1), sample, freqs, Dnum, Ddenom, pop1_, pop2_, pop3_, pop4_, factor, coords, t_, t_min_, minmafcut);
+				traverse_D(*std::prev(mtr.tree.nodes.end(),1), sample, freqs, Dnum, Ddenom, pop1_, pop2_, pop3_, pop4_, popsizes, factor, coords, t_, t_min_, minmafcut);
 			}else{
 
 				for(std::vector<Node>::iterator it_node = mtr.tree.nodes.begin(); it_node != mtr.tree.nodes.end(); it_node++){
@@ -711,7 +728,7 @@ DataFrame D_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP pop1
 					if(it_mut == ancmut.mut_end()) break;
 				}
 
-				traverse_D(*std::prev(mtr.tree.nodes.end(),1), sample, freqs, Dnum, Ddenom, pop1_, pop2_, pop3_, pop4_, factor, coords, t_, t_min_, minmafcut);
+				traverse_D(*std::prev(mtr.tree.nodes.end(),1), sample, freqs, Dnum, Ddenom, pop1_, pop2_, pop3_, pop4_, popsizes, factor, coords, t_, t_min_, minmafcut);
 
 			}
 
@@ -853,6 +870,7 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 	}
 
 	int isM = 1;
+	if(binsize_ == 0) Rcpp::stop("blgsize cannot be 0.");
 	if(binsize_ > 100) isM = 0;
 	if(binsize_ < 0) isM = -1;
 	if(isM == 1){
@@ -889,8 +907,7 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 		blockBP = true;
 		os.open(as<std::string>(dump_blockpos));
 		if(isM == 1){
-      std::cerr << "Error: dump_blockpos only works for bp distances." << std::endl;
-			exit(1);
+			Rcpp::stop("dump_blockpos only works for bp distances.");
 		}
 	}
 
@@ -899,13 +916,14 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 		//We open anc file and read one tree at a time. File remains open until all trees have been read OR ancmut.CloseFiles() is called.
 		//The mut file is read once, file is closed after constructor is called.
 		AncMutIterators ancmut(filename_anc[chr], filename_mut[chr]);
+		if(sample.group_of_haplotype.size() != ancmut.NumTips()) Rcpp::stop("Number of haplotypes in poplabels (" + std::to_string(sample.group_of_haplotype.size()) + ") does not match number of tips in " + filename_anc[chr] + " (" + std::to_string(ancmut.NumTips()) + ").");
 		Data data(ancmut.NumTips(), ancmut.NumSnps());
 
-		map recmap(filename_rec[chr].c_str());
+		map recmap(isM == 1 ? filename_rec[chr].c_str() : ""); //map only needed for blocks in Morgan
 		int irec = 0;
 
 		if( blockID+100 >= size(f2_block)[2] ){
-			f2_block.resize(sample.groups.size()+1, sample.groups.size()+1, size(f2_block)[3] + 1000);
+			f2_block.resize(sample.groups.size()+1, sample.groups.size()+1, size(f2_block)[2] + 1000);
 			splicenames.resize(splicenames.size() + 1000);
 		}
 
@@ -924,10 +942,16 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 		std::cerr << "Block: " << blockID << "\r";
 		while(num_bases_tree_persists >= 0.0){
 
+			//skip trees without SNPs: it_mut then points to SNPs of a later tree (or mut_end)
+			if(it_mut == ancmut.mut_end() || (*it_mut).tree != ancmut.get_treecount()){
+				num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
+				continue;
+			}
+
 			mtr.tree.GetCoordinates(coords);
 			mtr.tree.FindAllLeaves(desc);
 
-			if(((*it_mut).tree % (int)(ancmut.NumTrees()/100)) == 0){
+			if(((*it_mut).tree % std::max(1, (int)(ancmut.NumTrees()/100))) == 0){
 				std::cerr << "Block: " << blockID << ", " << "[" << percentage << "%]\r";
 				Rcpp::checkUserInterrupt();
 				percentage++;
@@ -949,7 +973,7 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 							break;
 						}
 					}
-					if(irec == recmap.bp.size()-1){
+					if(irec == recmap.bp.size()-1 && recmap.bp[irec] < (*it_mut).pos){
 						rec = recmap.gen_pos[irec]/recmap.bp[irec] * ((*it_mut).pos - recmap.bp[irec]) + recmap.gen_pos[irec];
 					}else{
 						assert(recmap.bp[irec] >= (*it_mut).pos);
@@ -1080,8 +1104,12 @@ NumericVector f2_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabel
 			}
 			splicenames[blockID] = "l" + std::to_string((int)std::round(num_infSNPs));
 			num_infSNPs = 0;
-			if(blockBP) os << blockID << " " << current_pos << " " << (*it_mut).pos << "\n";
+			if(blockBP) os << blockID << " " << current_pos << " " << (*std::prev(ancmut.mut_end(),1)).pos << "\n";
 			blockID++;
+		}else{
+			//discard remainder so that blocks do not span chromosomes
+			f2_block.slice(blockID).zeros();
+			num_infSNPs = 0;
 		}
 
 	}
@@ -1186,6 +1214,7 @@ NumericVector f2_blocks_from_RelateAges( SEXP pref, SEXP file_mut, Nullable<doub
 	}
 
 	bool isM = true;
+	if(binsize_ <= 0) Rcpp::stop("blgsize needs to be positive.");
 	if(binsize_ > 100) isM = false;
 
 	std::string filename_mut = as<std::string>(file_mut);
@@ -1292,7 +1321,7 @@ NumericVector f2_blocks_from_RelateAges( SEXP pref, SEXP file_mut, Nullable<doub
 
 		//std::cerr << bp << std::endl;
 
-		if((snp % (int)(data.L/100)) == 0){
+		if((snp % std::max(1, (int)(data.L/100))) == 0){
 			std::cerr << "Block: " << blockID << ", " << "[" << percentage << "%]\r";
 			Rcpp::checkUserInterrupt();
 			percentage++;
@@ -1350,6 +1379,12 @@ NumericVector f2_blocks_from_RelateAges( SEXP pref, SEXP file_mut, Nullable<doub
 				num_infSNPs_ps = arma::zeros<arma::mat>(pops_.size(), pops_.size());
 				num_snps = 0;
 				blockID++;
+			}else if(current_chr != chr){
+				//discard remainder so that blocks do not span chromosomes
+				f2_block.slice(blockID).zeros();
+				num_infSNPs = 0;
+				num_infSNPs_ps = arma::zeros<arma::mat>(pops_.size(), pops_.size());
+				num_snps = 0;
 			}
 			if( blockID+100 >= size(f2_block)[2] ){
 				f2_block.resize(pops_.size(), pops_.size(), size(f2_block)[2] + 1000);
@@ -1399,7 +1434,7 @@ NumericVector f2_blocks_from_RelateAges( SEXP pref, SEXP file_mut, Nullable<doub
 				}
 			}
 
-			if(debug) std::cerr << chr << " " << snp << " " << data.L << " " << blockID << " " << bp << " " << " " << (*it_mut).pos << " " << rec << " " << current_chr << " " << current_pos << " " << current_rec << " " << binsize_ << " " << REF << " " << ALT << " " << use << " " << mut_exists << std::endl;
+			if(debug) std::cerr << chr << " " << snp << " " << data.L << " " << blockID << " " << bp << " " << " " << ((mut_exists && it_mut != mut.info.end()) ? (*it_mut).pos : -1) << " " << rec << " " << current_chr << " " << current_pos << " " << current_rec << " " << binsize_ << " " << REF << " " << ALT << " " << use << " " << mut_exists << std::endl;
 
 			if(!include && mut_exists && use){
 				if(it_mut != mut.info.end()){
@@ -1411,7 +1446,7 @@ NumericVector f2_blocks_from_RelateAges( SEXP pref, SEXP file_mut, Nullable<doub
 
 					//std::cerr << use << " " << (*it_mut).pos << " " << (int) bp << " " << prop_excl << " " << snp << " " << ((double) prop_excl/snp) << std::endl;
 					//exclude or calculate overlap here
-					if( (*it_mut).pos == bp ){
+					if( it_mut != mut.info.end() && (*it_mut).pos == bp ){
 						std::string mut_type1 = REF + "/" + ALT;
 						std::string mut_type2 = ALT + "/" + REF;	
 						if( (*it_mut).branch.size() == 1 && (*it_mut).flipped == 0 && (*it_mut).age_end > (*it_mut).age_begin ){
@@ -1691,6 +1726,7 @@ NumericVector Fst_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabe
 	}
 
 	int isM = 1;
+	if(binsize_ == 0) Rcpp::stop("blgsize cannot be 0.");
 	if(binsize_ > 100) isM = 0;
 	if(binsize_ < 0) isM = -1;
 	if(isM == 1){
@@ -1727,8 +1763,7 @@ NumericVector Fst_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabe
 		blockBP = true;
 		os.open(as<std::string>(dump_blockpos));
 		if(isM == 1){
-			std::cerr << "Error: dump_blockpos only works for bp distances." << std::endl;
-			exit(1);
+			Rcpp::stop("dump_blockpos only works for bp distances.");
 		}
 	}
 
@@ -1737,14 +1772,15 @@ NumericVector Fst_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabe
 		//We open anc file and read one tree at a time. File remains open until all trees have been read OR ancmut.CloseFiles() is called.
 		//The mut file is read once, file is closed after constructor is called.
 		AncMutIterators ancmut(filename_anc[chr], filename_mut[chr]);
+		if(sample.group_of_haplotype.size() != ancmut.NumTips()) Rcpp::stop("Number of haplotypes in poplabels (" + std::to_string(sample.group_of_haplotype.size()) + ") does not match number of tips in " + filename_anc[chr] + " (" + std::to_string(ancmut.NumTips()) + ").");
 		Data data(ancmut.NumTips(), ancmut.NumSnps());
 
-		map recmap(filename_rec[chr].c_str());
+		map recmap(isM == 1 ? filename_rec[chr].c_str() : ""); //map only needed for blocks in Morgan
 		int irec = 0;
 
 		if( blockID+100 >= size(Fstnum_block)[2] ){
-			Fstnum_block.resize(sample.groups.size()+1, sample.groups.size()+1, size(Fstnum_block)[3] + 1000);
-			Fstdenom_block.resize(sample.groups.size()+1, sample.groups.size()+1, size(Fstdenom_block)[3] + 1000);
+			Fstnum_block.resize(sample.groups.size()+1, sample.groups.size()+1, size(Fstnum_block)[2] + 1000);
+			Fstdenom_block.resize(sample.groups.size()+1, sample.groups.size()+1, size(Fstdenom_block)[2] + 1000);
 			splicenames.resize(splicenames.size() + 1000);
 		}
 
@@ -1763,10 +1799,16 @@ NumericVector Fst_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabe
 		std::cerr << "Block: " << blockID << "\r";
 		while(num_bases_tree_persists >= 0.0){
 
+			//skip trees without SNPs: it_mut then points to SNPs of a later tree (or mut_end)
+			if(it_mut == ancmut.mut_end() || (*it_mut).tree != ancmut.get_treecount()){
+				num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
+				continue;
+			}
+
 			mtr.tree.GetCoordinates(coords);
 			mtr.tree.FindAllLeaves(desc);
 
-			if(((*it_mut).tree % (int)(ancmut.NumTrees()/100)) == 0){
+			if(((*it_mut).tree % std::max(1, (int)(ancmut.NumTrees()/100))) == 0){
 				std::cerr << "Block: " << blockID << ", " << "[" << percentage << "%]\r";
 				Rcpp::checkUserInterrupt();
 				percentage++;
@@ -1788,7 +1830,7 @@ NumericVector Fst_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabe
 							break;
 						}
 					}
-					if(irec == recmap.bp.size()-1){
+					if(irec == recmap.bp.size()-1 && recmap.bp[irec] < (*it_mut).pos){
 						rec = recmap.gen_pos[irec]/recmap.bp[irec] * ((*it_mut).pos - recmap.bp[irec]) + recmap.gen_pos[irec];
 					}else{
 						assert(recmap.bp[irec] >= (*it_mut).pos);
@@ -1811,6 +1853,7 @@ NumericVector Fst_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabe
 					  it_c1++;
 						it_c2++;
 					}
+					Fstnum_block.slice(blockID).diag().zeros(); //Fst of a group with itself is 0 (avoid 0/0)
 
 					splicenames[blockID] = "l" + std::to_string((int)std::round(num_infSNPs));
 					num_infSNPs = 0;
@@ -1926,10 +1969,16 @@ NumericVector Fst_blocks_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabe
 					  it_c1++;
 						it_c2++;
 					}
+					Fstnum_block.slice(blockID).diag().zeros(); //Fst of a group with itself is 0 (avoid 0/0)
 					splicenames[blockID] = "l" + std::to_string((int)std::round(num_infSNPs));
 					num_infSNPs = 0;
-					if(blockBP) os << blockID << " " << current_pos << " " << (*it_mut).pos << "\n";
+					if(blockBP) os << blockID << " " << current_pos << " " << (*std::prev(ancmut.mut_end(),1)).pos << "\n";
 					blockID++;
+		}else{
+			//discard remainder so that blocks do not span chromosomes
+			Fstnum_block.slice(blockID).zeros();
+			Fstdenom_block.slice(blockID).zeros();
+			num_infSNPs = 0;
 		}
 
 	}
@@ -2014,6 +2063,7 @@ void TMRCA_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_
 	}
 
 	bool isM = true;
+	if(binsize_ <= 0) Rcpp::stop("blgsize needs to be positive.");
 	if(binsize_ > 100) isM = false;
 	if(isM){
 		if(map_ == ""){
@@ -2038,8 +2088,29 @@ void TMRCA_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_
 
 	//as output I want a data frame with columns blockID, chr, start, end, ind1, ind2, pop1, pop2, f2
 
-	std::vector<float> numsnps(1000), chrom(1000), blockBP(1000);
-	arma::cube f2_block = arma::zeros<arma::cube>(sample.group_of_haplotype.size(), sample.group_of_haplotype.size(), 1000);
+	//only the current block is kept in memory and written to file once it is complete
+	arma::mat f2_block = arma::zeros<arma::mat>(sample.group_of_haplotype.size(), sample.group_of_haplotype.size());
+	bool is_haploid = (sample.group_of_haplotype.size() == sample.ind.size());
+
+	std::ofstream os(as<std::string>(file_out) + ".tmrca");
+	os << "blockID\tCHR\tBP\tHAPID1\tHAPID2\tIND1\tIND2\tPOP1\tPOP2\tTMRCA\n";
+
+	//blockID chr bp ind1 ind2 pop1 pop2 TMRCA
+	auto write_block = [&](int b, int chr, int bp){
+		int k = 0;
+		for(arma::mat::iterator it_c = f2_block.begin(); it_c != f2_block.end(); it_c++){
+
+			int i = k/f2_block.n_rows;
+			int j = k%f2_block.n_rows;
+			int ind_i = is_haploid ? i : i/2;
+			int ind_j = is_haploid ? j : j/2;
+
+			os << b << "\t" << chrs_[chr] << "\t" << bp << "\t" << i << "\t" << j << "\t" << sample.ind[ind_i] << "\t" << sample.ind[ind_j] << "\t" << 
+				sample.groups[sample.group_of_haplotype[i]] << "\t" << sample.groups[sample.group_of_haplotype[j]] << "\t" << *it_c << "\n";
+
+			k++;
+		}
+	};
 
 	int blockID = 0;
 	float num_infSNPs = 0.0;
@@ -2048,17 +2119,11 @@ void TMRCA_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_
 		//We open anc file and read one tree at a time. File remains open until all trees have been read OR ancmut.CloseFiles() is called.
 		//The mut file is read once, file is closed after constructor is called.
 		AncMutIterators ancmut(filename_anc[chr], filename_mut[chr]);
+		if(sample.group_of_haplotype.size() != ancmut.NumTips()) Rcpp::stop("Number of haplotypes in poplabels (" + std::to_string(sample.group_of_haplotype.size()) + ") does not match number of tips in " + filename_anc[chr] + " (" + std::to_string(ancmut.NumTips()) + ").");
 		Data data(ancmut.NumTips(), ancmut.NumSnps());
 
-		map recmap(filename_rec[chr].c_str());
+		map recmap(isM == 1 ? filename_rec[chr].c_str() : ""); //map only needed for blocks in Morgan
 		int irec = 0;
-
-		if( blockID+100 >= size(f2_block)[2] ){
-			f2_block.resize(sample.group_of_haplotype.size(), sample.group_of_haplotype.size(), size(f2_block)[3] + 1000);
-			numsnps.resize(numsnps.size() + 1000);
-			chrom.resize(chrom.size() + 1000);
-			blockBP.resize(blockBP.size() + 1000);
-		}
 
 		//mtr stores the marginal tree, it_mut points to the first SNP at which the marginal tree starts.
 		//If marginal tree has no SNPs mapping to it, it_mut points to the first SNP of the following tree that has a SNP mapping to it
@@ -2075,10 +2140,16 @@ void TMRCA_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_
 		std::cerr << "Block: " << blockID << "\r";
 		while(num_bases_tree_persists >= 0.0){
 
+			//skip trees without SNPs: it_mut then points to SNPs of a later tree (or mut_end)
+			if(it_mut == ancmut.mut_end() || (*it_mut).tree != ancmut.get_treecount()){
+				num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
+				continue;
+			}
+
 			mtr.tree.GetCoordinates(coords);
 			mtr.tree.FindAllLeaves(desc);
 
-			if(((*it_mut).tree % (int)(ancmut.NumTrees()/100)) == 0){
+			if(((*it_mut).tree % std::max(1, (int)(ancmut.NumTrees()/100))) == 0){
 				std::cerr << "Block: " << blockID << ", " << "[" << percentage << "%]\r";
 				Rcpp::checkUserInterrupt();
 				percentage++;
@@ -2101,7 +2172,7 @@ void TMRCA_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_
 							break;
 						}
 					}
-					if(irec == recmap.bp.size()-1){
+					if(irec == recmap.bp.size()-1 && recmap.bp[irec] < (*it_mut).pos){
 						rec = recmap.gen_pos[irec]/recmap.bp[irec] * ((*it_mut).pos - recmap.bp[irec]) + recmap.gen_pos[irec];
 					}else{
 						assert(recmap.bp[irec] >= (*it_mut).pos);
@@ -2117,21 +2188,12 @@ void TMRCA_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_
 
 				Rcpp::checkUserInterrupt();
 				if((int)std::round(num_infSNPs) > 0){
-					for(arma::cube::slice_iterator it_c = f2_block.begin_slice(blockID); it_c != f2_block.end_slice(blockID); it_c++){
-						*it_c /= factor;
-					}
-					numsnps[blockID] = std::round(num_infSNPs);
-					chrom[blockID] = chr;
-					blockBP[blockID] = current_pos;
+					f2_block /= factor;
+					write_block(blockID, chr, current_pos);
+					f2_block.zeros();
 					num_infSNPs = 0;
 					factor = 0.0;
 					blockID++;
-				}
-				if( blockID+100 >= size(f2_block)[2] ){
-					f2_block.resize(sample.group_of_haplotype.size(), sample.group_of_haplotype.size(), size(f2_block)[2] + 1000);
-					numsnps.resize(numsnps.size() + 1000);
-					chrom.resize(chrom.size() + 1000);
-					blockBP.resize(blockBP.size() + 1000);
 				}
 				if(isM){
 					while(rec/100.0 - current_rec > binsize_){
@@ -2152,48 +2214,23 @@ void TMRCA_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP file_
 			while((*it_mut).tree == tree){
 				num_infSNPs++;
 				it_mut++;
+				if(it_mut == ancmut.mut_end()) break;
 			}
-			traverseTMRCA(mtr, desc, f2_block.slice(blockID), num_bases_tree_persists, coords, t_);
+			traverseTMRCA(mtr, desc, f2_block, num_bases_tree_persists, coords, t_);
 
 			num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
 		}
 
 		if((int)std::round(num_infSNPs) > 0){
-			for(arma::cube::slice_iterator it_c = f2_block.begin_slice(blockID); it_c != f2_block.end_slice(blockID); it_c++){
-				*it_c /= factor;
-			}
-			numsnps[blockID] = std::round(num_infSNPs);
-			chrom[blockID] = chr;
-			blockBP[blockID] = current_pos;
-			num_infSNPs = 0;
+			f2_block /= factor;
+			write_block(blockID, chr, current_pos);
 			blockID++;
 		}
+		//reset so that blocks do not span chromosomes
+		f2_block.zeros();
+		num_infSNPs = 0;
+		factor = 0.0;
 
-	}
-
-	//Output to file
-	f2_block.reshape(sample.group_of_haplotype.size(), sample.group_of_haplotype.size(), blockID);
-	numsnps.resize(blockID);
-	chrom.resize(blockID);
-	blockBP.resize(blockID);
-
-	std::ofstream os(as<std::string>(file_out) + ".tmrca");
-
-	os << "blockID\tCHR\tBP\tHAPID1\tHAPID2\tIND1\tIND2\tPOP1\tPOP2\tTMRCA\n";
-
-	//blockID chr bp ind1 ind2 pop1 pop2 TMRCA
-	for(int b = 0; b < blockID; b++){
-		int k = 0;
-		for(arma::cube::slice_iterator it_c = f2_block.begin_slice(b); it_c != f2_block.end_slice(b); it_c++){
-
-			int i = k/f2_block.n_rows;
-			int j = k%f2_block.n_rows;
-
-			os << b << "\t" << chrs_[chrom[b]] << "\t" << blockBP[b] << "\t" << i << "\t" << j << "\t" << sample.ind[(int) (i/2.0)] << "\t" << sample.ind[(int) (j/2.0)] << "\t" << 
-				sample.groups[sample.group_of_haplotype[i]] << "\t" << sample.groups[sample.group_of_haplotype[j]] << "\t" << *it_c << "\n";
-
-			k++;
-		}
 	}
 
 	os.close();
@@ -2239,6 +2276,9 @@ void TMRCAdist_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP f
 	}
 
 	std::vector<float> epochs_ = as<std::vector<float> >(epochs);
+	if(epochs_.size() == 0 || epochs_[0] > 0 || !std::is_sorted(epochs_.begin(), epochs_.end())){
+		Rcpp::stop("epochs needs to be an increasing vector starting at 0.");
+	}
 
 	double t_ = std::numeric_limits<double>::infinity();
 	if(t.isNotNull()){
@@ -2266,6 +2306,7 @@ void TMRCAdist_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP f
 	}
 
 	bool isM = true;
+	if(binsize_ <= 0) Rcpp::stop("blgsize needs to be positive.");
 	if(binsize_ > 100) isM = false;
 	if(isM){
 		if(map_ == ""){
@@ -2293,6 +2334,7 @@ void TMRCAdist_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP f
 	//std::vector<float> numsnps(1000), chrom(1000), blockBP(1000);
 	double numsnps, chrom, blockBP;
 	int N = sample.group_of_haplotype.size();
+	bool is_haploid = (N == sample.ind.size());
 	std::vector<std::vector<std::vector<float>>> tmrcas(N);
 	for(int i = 0; i < tmrcas.size(); i++){
 		tmrcas[i].resize(N);
@@ -2319,9 +2361,10 @@ void TMRCAdist_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP f
 		//We open anc file and read one tree at a time. File remains open until all trees have been read OR ancmut.CloseFiles() is called.
 		//The mut file is read once, file is closed after constructor is called.
 		AncMutIterators ancmut(filename_anc[chr], filename_mut[chr]);
+		if(sample.group_of_haplotype.size() != ancmut.NumTips()) Rcpp::stop("Number of haplotypes in poplabels (" + std::to_string(sample.group_of_haplotype.size()) + ") does not match number of tips in " + filename_anc[chr] + " (" + std::to_string(ancmut.NumTips()) + ").");
 		Data data(ancmut.NumTips(), ancmut.NumSnps());
 
-		map recmap(filename_rec[chr].c_str());
+		map recmap(isM == 1 ? filename_rec[chr].c_str() : ""); //map only needed for blocks in Morgan
 		int irec = 0;
 
 		//mtr stores the marginal tree, it_mut points to the first SNP at which the marginal tree starts.
@@ -2339,10 +2382,16 @@ void TMRCAdist_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP f
 		std::cerr << "Block: " << blockID << "\r";
 		while(num_bases_tree_persists >= 0.0){
 
+			//skip trees without SNPs: it_mut then points to SNPs of a later tree (or mut_end)
+			if(it_mut == ancmut.mut_end() || (*it_mut).tree != ancmut.get_treecount()){
+				num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
+				continue;
+			}
+
 			mtr.tree.GetCoordinates(coords);
 			mtr.tree.FindAllLeaves(desc);
 
-			if(((*it_mut).tree % (int)(ancmut.NumTrees()/100)) == 0){
+			if(((*it_mut).tree % std::max(1, (int)(ancmut.NumTrees()/100))) == 0){
 				std::cerr << "Block: " << blockID << ", " << "[" << percentage << "%]\r";
 				Rcpp::checkUserInterrupt();
 				percentage++;
@@ -2365,7 +2414,7 @@ void TMRCAdist_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP f
 							break;
 						}
 					}
-					if(irec == recmap.bp.size()-1){
+					if(irec == recmap.bp.size()-1 && recmap.bp[irec] < (*it_mut).pos){
 						rec = recmap.gen_pos[irec]/recmap.bp[irec] * ((*it_mut).pos - recmap.bp[irec]) + recmap.gen_pos[irec];
 					}else{
 						assert(recmap.bp[irec] >= (*it_mut).pos);
@@ -2388,7 +2437,7 @@ void TMRCAdist_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP f
 					factor = 0.0;
 					for(int i = 0; i < N; i++){
 						for(int j = 0; j < N; j++){
-							os << blockID << "\t" << chrs_[chrom] << "\t" << blockBP << "\t" << i << "\t" << j << "\t" << sample.ind[(int) (i/2.0)] << "\t" << sample.ind[(int) (j/2.0)] << "\t" <<	sample.groups[sample.group_of_haplotype[i]] << "\t" << sample.groups[sample.group_of_haplotype[j]] << "\t";
+							os << blockID << "\t" << chrs_[chrom] << "\t" << blockBP << "\t" << i << "\t" << j << "\t" << sample.ind[is_haploid ? i : i/2] << "\t" << sample.ind[is_haploid ? j : j/2] << "\t" <<	sample.groups[sample.group_of_haplotype[i]] << "\t" << sample.groups[sample.group_of_haplotype[j]] << "\t";
 							for(int e = 0; e < epochs_.size(); e++){
 							  os << tmrcas[i][j][e] << "\t";
 							}
@@ -2439,7 +2488,7 @@ void TMRCAdist_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP f
 
 			for(int i = 0; i < N; i++){
 				for(int j = 0; j < N; j++){
-					os << blockID << "\t" << chrs_[chrom] << "\t" << blockBP << "\t" << i << "\t" << j << "\t" << sample.ind[(int) (i/2.0)] << "\t" << sample.ind[(int) (j/2.0)] << "\t" <<	sample.groups[sample.group_of_haplotype[i]] << "\t" << sample.groups[sample.group_of_haplotype[j]] << "\t";
+					os << blockID << "\t" << chrs_[chrom] << "\t" << blockBP << "\t" << i << "\t" << j << "\t" << sample.ind[is_haploid ? i : i/2] << "\t" << sample.ind[is_haploid ? j : j/2] << "\t" <<	sample.groups[sample.group_of_haplotype[i]] << "\t" << sample.groups[sample.group_of_haplotype[j]] << "\t";
 					for(int e = 0; e < epochs_.size(); e++){
 						os << tmrcas[i][j][e] << "\t";
 					}
@@ -2455,6 +2504,13 @@ void TMRCAdist_from_Relate( SEXP file_anc, SEXP file_mut, SEXP poplabels, SEXP f
 
 			blockID++;
 		}
+		//reset so that blocks do not span chromosomes
+		for(int i = 0; i < tmrcas.size(); i++){
+			for(int j = 0; j < N; j++){
+				std::fill(tmrcas[i][j].begin(), tmrcas[i][j].end(), 0.0);
+			}
+		}
+		num_infSNPs = 0;
 
 	}
 

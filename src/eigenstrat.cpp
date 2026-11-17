@@ -157,7 +157,7 @@ plink::plink(std::string pref){
     Rcpp::stop("Failed to parse bed file. Possibly empty.");
   }else{
     if(header[0] != 0x6c || header[1] != 0x1b ||  header[2] != 0x01){
-      Rcpp::warning("Magic numbers in bed not matching with expectation.");
+      Rcpp::stop("Magic numbers in bed not matching with expectation (only SNP-major bed files are supported).");
     }
   }
   blocks = (unsigned char*) malloc(num_blocks);
@@ -181,7 +181,9 @@ plink::ChangeFAM(std::vector<std::string>& fam){
     membership.push_back(groups[fam[i]]);
     N2++;
   }
-  assert(N == N2);
+  if(N != N2){
+    Rcpp::stop("Length of fam (" + std::to_string(N2) + ") does not match number of individuals in .fam file (" + std::to_string(N) + ").");
+  }
 }
 
 int
@@ -195,15 +197,19 @@ plink::ReadSNP(std::vector<int>& sequence, std::string& chr, int& bp, double& re
   if(count_snps <= L){
 
     //chrID variantID cM bp allele1 allele2
-    is_snp >> chr >> tmp >> rec >> bp >> REF >> ALT;
+    if(!(is_snp >> chr >> tmp >> rec >> bp >> REF >> ALT)){
+      return 0; //no more SNPs (e.g. trailing empty lines in bim)
+    }
 
     //parse bed file
-    fread(blocks,1,num_blocks,fp_geno);
+    if(fread(blocks,1,num_blocks,fp_geno) != num_blocks){
+      Rcpp::stop("Unexpected end of bed file.");
+    }
 
     //0,1,2 genotypes and 9 means missing
     int j = 0;
     std::vector<int>::iterator it_seq = sequence.begin();
-    int* snp_block = (int*) malloc(4*sizeof(int));
+    int* snp_block;
     for(int i = 0; i < num_blocks; i++){
       snp_block = snp_lookup[ (int)blocks[i] ];
       //std::cerr << (int) blocks[i] << " ";
