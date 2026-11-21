@@ -256,6 +256,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 
 				//get all pos/gpos pairs until next tree
 				std::vector<double> pos, gpos;
+				int nbins = 0; //number of bin boundaries passed (in cM mode, can exceed pos.size() if bins are merged)
 				irec = irec_orig;
 				if(!isM){
 					assert((current_ipos+1)*binsize_ >= current_pos);
@@ -288,13 +289,16 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 				}else{
 					assert((current_igenpos+1)*binsize_ >= current_genpos);
 					assert((current_igenpos+1)*binsize_ <= genpos);
+					double last_pos = current_pos;
 					for(double gbp = (current_igenpos + 1.0)*binsize_; gbp <= genpos; gbp += binsize_){
+						nbins++;
+						double p;
 						if(recmap.gen_pos[irec] >= gbp){
-							assert(recmap.gen_pos[irec-1] <= gbp);
+							assert(irec == 0 || recmap.gen_pos[irec-1] <= gbp);
 							if(irec > 0){
-								pos.push_back((int)(((double)gbp - recmap.gen_pos[irec-1])/(recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) * (recmap.bp[irec] - recmap.bp[irec-1]) + recmap.bp[irec-1]));
+								p = (int)(((double)gbp - recmap.gen_pos[irec-1])/(recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) * (recmap.bp[irec] - recmap.bp[irec-1]) + recmap.bp[irec-1]);
 							}else{
-								pos.push_back((int)(((double)gbp)/(recmap.gen_pos[irec]) * (recmap.bp[irec])));         
+								p = (int)(((double)gbp)/(recmap.gen_pos[irec]) * (recmap.bp[irec]));
 							}
 						}else{
 							while( recmap.gen_pos[irec] < gbp ){
@@ -305,16 +309,26 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 								}
 							}
 							if(irec == recmap.bp.size()-1 && recmap.gen_pos[irec] < gbp){
-								pos.push_back((int)(recmap.bp[irec]/recmap.gen_pos[irec] * (gbp - recmap.gen_pos[irec]) + recmap.bp[irec]));
+								p = (int)(recmap.bp[irec]/recmap.gen_pos[irec] * (gbp - recmap.gen_pos[irec]) + recmap.bp[irec]);
 							}else{
 								assert(recmap.gen_pos[irec] >= gbp);
 								assert(recmap.gen_pos[irec-1] <= gbp);
 								assert(irec > 0);
-								pos.push_back((int)(((double)gbp - recmap.gen_pos[irec-1])/(recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) * (recmap.bp[irec] - recmap.bp[irec-1]) + ((double)recmap.bp[irec-1]) ));
+								p = (int)(((double)gbp - recmap.gen_pos[irec-1])/(recmap.gen_pos[irec] - recmap.gen_pos[irec-1]) * (recmap.bp[irec] - recmap.bp[irec-1]) + ((double)recmap.bp[irec-1]) );
 							}
 						}
+						//In regions with recombination rate > 1/binsize per bp, consecutive bin boundaries can map to the same bp.
+						//Such bins would produce duplicate positions and infinite recombination rates in the rec file, so merge them into the next bin.
+						if(p <= last_pos) continue;
+						pos.push_back(p);
 						gpos.push_back(gbp);
+						last_pos = p;
 					}
+				}
+				if(isM) current_igenpos += nbins;
+				if(pos.size() == 0){ //all bins until next tree were merged; nothing to output yet
+					num_bases_tree_persists = ancmut.NextTree(mtr, it_mut);
+					continue;
 				}
 				assert(pos.size() > 0);
 				assert(gpos.size() > 0);
@@ -331,7 +345,7 @@ void Painting( SEXP file_anc, SEXP file_mut, SEXP file_map, SEXP file_out, SEXP 
 				}
 				current_ipos += pos.size();
 				current_pos = pos[pos.size()-1];
-				current_igenpos += gpos.size();
+				if(!isM) current_igenpos += gpos.size();
 				current_genpos = gpos[gpos.size()-1];
 
 				mtr.tree.GetCoordinates(coords);
